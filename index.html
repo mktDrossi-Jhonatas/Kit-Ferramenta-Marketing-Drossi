@@ -17,214 +17,32 @@
     --border: #e8ddd4;
     --shadow: rgba(139,111,71,0.12);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text);
-    min-height: 100vh;
-  }
-
-  /* ── HERO ── */
-  .hero {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 56px 24px 48px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 50%, rgba(196,168,130,0.13) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 80% 40%, rgba(139,111,71,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .hero-badge {
-    display: inline-block;
-    background: #fdf5eb;
-    border: 1px solid var(--accent2);
-    color: var(--accent);
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 5px 14px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-  }
-
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.9rem, 5vw, 2.8rem);
-    line-height: 1.15;
-    margin-bottom: 12px;
-    position: relative;
-  }
-
-  .hero h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-
-  .hero p {
-    color: var(--muted);
-    font-size: 0.95rem;
-    max-width: 480px;
-    margin: 0 auto;
-    line-height: 1.6;
-    position: relative;
-  }
-
-  /* ── GRID ── */
-  .container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 24px 64px;
-  }
-
-  .section-label {
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent2);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 18px;
-  }
-
-  /* ── CARD ── */
-  .tool-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px 24px 22px;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    box-shadow: 0 2px 12px var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .tool-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    opacity: 0;
-    transition: opacity 0.18s ease;
-  }
-
-  .tool-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 32px rgba(139,111,71,0.18);
-    border-color: var(--accent2);
-  }
-
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+  .hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 56px 24px 48px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 50% at 20% 50%, rgba(196,168,130,0.13) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 40%, rgba(139,111,71,0.08) 0%, transparent 70%); pointer-events: none; }
+  .hero-badge { display: inline-block; background: #fdf5eb; border: 1px solid var(--accent2); color: var(--accent); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.15; margin-bottom: 12px; position: relative; }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto; line-height: 1.6; position: relative; }
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px 64px; }
+  .section-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent2); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+  .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px 22px; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; box-shadow: 0 2px 12px var(--shadow); position: relative; overflow: hidden; }
+  .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); opacity: 0; transition: opacity 0.18s ease; }
+  .tool-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(139,111,71,0.18); border-color: var(--accent2); }
   .tool-card:hover::before { opacity: 1; }
-
-  .tool-icon {
-    font-size: 1.8rem;
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-
-  .tool-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    color: var(--text);
-    line-height: 1.3;
-  }
-
-  .tool-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.55;
-    flex: 1;
-  }
-
-  .tool-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--accent);
-    margin-top: 6px;
-  }
-
-  .tool-cta svg {
-    transition: transform 0.15s ease;
-  }
-
-  .tool-card:hover .tool-cta svg {
-    transform: translateX(3px);
-  }
-
-  /* ── COMING SOON CARD ── */
-  .tool-card.soon {
-    opacity: 0.55;
-    pointer-events: none;
-    background: #fdfaf7;
-  }
-
-  .tool-card.soon .tool-name::after {
-    content: 'em breve';
-    display: inline-block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.62rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    background: var(--border);
-    color: var(--muted);
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 10px;
-    vertical-align: middle;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    text-align: center;
-    padding: 24px;
-    font-size: 0.75rem;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-  }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
+  .tool-icon { font-size: 1.8rem; line-height: 1; margin-bottom: 2px; }
+  .tool-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--text); line-height: 1.3; }
+  .tool-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; flex: 1; }
+  .tool-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; color: var(--accent); margin-top: 6px; }
+  .tool-cta svg { transition: transform 0.15s ease; }
+  .tool-card:hover .tool-cta svg { transform: translateX(3px); }
+  .tool-card.soon { opacity: 0.55; pointer-events: none; background: #fdfaf7; }
+  .tool-card.soon .tool-name::after { content: 'em breve'; display: inline-block; font-family: 'DM Sans', sans-serif; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; background: var(--border); color: var(--muted); padding: 2px 8px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  footer { text-align: center; padding: 24px; font-size: 0.75rem; color: var(--muted); border-top: 1px solid var(--border); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   .hero { animation: fadeUp 0.5s ease both; }
   .section-label { animation: fadeUp 0.5s 0.15s ease both; }
   .tool-card:nth-child(1) { animation: fadeUp 0.4s 0.2s ease both; }
@@ -244,36 +62,29 @@
 
 <main class="container">
   <div class="section-label">Ferramentas disponíveis</div>
-
   <div class="tools-grid">
 
-    <!-- Gerador de Kit -->
     <a class="tool-card" href="gerador-kit/index.html">
       <div class="tool-icon">🪑</div>
       <div class="tool-name">Gerador de Kit</div>
       <div class="tool-desc">Monte kits de produto com múltiplas posições, variações de cor e layouts. Exporta 1000×1000px pronto para e-commerce.</div>
-      <div class="tool-cta">
-        Abrir ferramenta
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="tool-cta">Abrir ferramenta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </a>
 
-    <!-- IMGCROP -->
     <a class="tool-card" href="imgcrop/index.html">
       <div class="tool-icon">✂️</div>
       <div class="tool-name">IMGCROP</div>
       <div class="tool-desc">Recorte e ajuste imagens em lote para o formato quadrado padrão de marketplace. Controle de zoom, posição e grade.</div>
-      <div class="tool-cta">
-        Abrir ferramenta
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <div class="tool-cta">Abrir ferramenta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </a>
 
-    <!-- Placeholder: nova ferramenta -->
+    <a class="tool-card" href="catalogo-prompts/index.html">
+      <div class="tool-icon">✨</div>
+      <div class="tool-name">Catálogo de Prompts</div>
+      <div class="tool-desc">Prompts testados para geração de imagens com IA. Exemplos visuais de input e resultado, com cópia em um clique.</div>
+      <div class="tool-cta">Abrir catálogo <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+
     <div class="tool-card soon">
       <div class="tool-icon">🔧</div>
       <div class="tool-name">Nova Ferramenta</div>
@@ -283,9 +94,6 @@
   </div>
 </main>
 
-<footer>
-  Kit Ferramentas · Drossi Marketing
-</footer>
-
+<footer>Kit Ferramentas · Drossi Marketing</footer>
 </body>
 </html>
