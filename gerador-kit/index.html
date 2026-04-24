@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #f5f0eb;
+    --surface: #fff;
+    --accent: #8b6f47;
+    --accent2: #c4a882;
+    --text: #2c2417;
+    --muted: #9b8e82;
+    --border: #e8ddd4;
+    --shadow: rgba(139,111,71,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 32px;
+  }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+    gap: 4px;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .mode-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .mode-btn span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 4px 24px var(--shadow);
+    margin-bottom: 24px;
+  }
+
+  .card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card h2 .num {
+    background: var(--accent);
+    color: #fff;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .upload-area {
+    border: 2px dashed var(--accent2);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: #fdf9f5;
+  }
+
+  .upload-area:hover { background: #f5ede2; border-color: var(--accent); }
+  .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+  .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+  .upload-text { color: var(--muted); font-size: 0.875rem; }
+  .upload-text strong { color: var(--accent); }
+
+  #preview-wrap { margin-top: 16px; display: none; position: relative; }
+  #preview-img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
+
+  .clear-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.5); border: none; color: #fff;
+    width: 26px; height: 26px; border-radius: 50%;
+    cursor: pointer; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .kit-options { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .kit-btn {
+    flex: 1; min-width: 70px;
+    padding: 13px 8px;
+    border: 2px solid var(--border); border-radius: 12px;
+    background: var(--surface); cursor: pointer;
+    font-family: 'Playfair Display', serif; font-size: 1rem;
+    color: var(--muted); transition: all 0.2s; text-align: center;
+  }
+
+  .kit-btn span { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .kit-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .kit-btn.selected { border-color: var(--accent); background: #fdf5eb; color: var(--accent); }
+  .kit-btn.selected span { color: var(--accent); }
+
+  .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .btn {
+    flex: 1; padding: 14px 20px; border: none; border-radius: 12px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 500; transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #7a5e38; }
+  .btn-primary:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.6; }
+  .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  .btn-outline:hover { background: #fdf5eb; }
+  .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .progress-wrap { display: none; padding: 16px 0 0; }
+  .progress-bar { width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; border-radius: 3px; }
+  .progress-label { color: var(--muted); font-size: 0.875rem; }
+
+  .results { display: none; }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .result-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .result-header { padding: 11px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .result-header strong { font-family: 'Playfair Display', serif; font-size: 0.9rem; }
+  .result-size { font-size: 0.72rem; color: var(--muted); background: var(--bg); padding: 3px 8px; border-radius: 20px; }
+  .result-img-wrap { padding: 10px; background: #fafafa; }
+  .result-img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 6px; }
+
+  .download-btn {
+    display: block; width: calc(100% - 22px); margin: 10px 11px;
+    padding: 9px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 0.85rem;
+    transition: background 0.2s; text-align: center;
+  }
+  .download-btn:hover { background: #7a5e38; }
+
+  .warn { font-size: 0.78rem; color: var(--muted); margin-top: 8px; }
+
+  /* ── ADVANCED MODE ── */
+  #advanced-mode { display: none; }
+
+  .adv-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .adv-gallery-item {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: #fdf9f5;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .adv-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+  }
+
+  .adv-gallery-item .gal-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(139,111,71,0.75);
+    color: #fff;
+    font-size: 0.6rem;
+    text-align: center;
+    padding: 2px 0;
+  }
+
+  .adv-gallery-item .gal-remove {
+    position: absolute; top: 3px; right: 3px;
+    background: rgba(0,0,0,0.5); border: none; color: #fff;
+    width: 18px; height: 18px; border-radius: 50%;
+    cursor: pointer; font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  .adv-add-more {
+    width: 82px; height: 82px;
+    border-radius: 10px;
+    border: 2px dashed var(--accent2);
+    background: #fdf9f5;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; gap: 4px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .adv-add-more:hover { background: #f5ede2; border-color: var(--accent); }
+  .adv-add-more input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .adv-add-more .add-icon { font-size: 1.4rem; color: var(--accent2); }
+  .adv-add-more .add-text { font-size: 0.62rem; color: var(--muted); text-align: center; }
+
+  /* ── VARIATION SYSTEM ── */
+  .variation-section {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--border);
+    display: none;
+  }
+
+  .variation-section.visible { display: block; }
+
+  .enable-variation-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    border-radius: 12px;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-track::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-track::before { transform: translateX(20px); }
+
+  .enable-variation-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .enable-variation-label strong { font-size: 0.9rem; }
+  .enable-variation-label span { font-size: 0.75rem; color: var(--muted); }
+
+  .variations-container { margin-top: 18px; display: none; }
+  .variations-container.open { display: block; }
+
+  /* Each variation group */
+  .var-group {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    background: #fdfaf7;
+    transition: border-color 0.2s;
+  }
+
+  .var-group-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fdf9f5;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .var-group-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent2);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .var-name-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text);
+    min-width: 0;
+  }
+  .var-name-input:focus { outline: none; border-bottom: 1px solid var(--accent2); }
+
+  .var-group-remove {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    font-size: 1rem; width: 26px; height: 26px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .var-group-remove:hover { background: #fce8e8; color: #c0392b; }
+
+  .var-group-body { padding: 12px 14px; }
+
+  .var-hint {
+    font-size: 0.76rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .var-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 90px;
+  }
+
+  /* Draggable items */
+  .var-img-item {
+    position: relative;
+    width: 82px; height: 82px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: #fff;
+    overflow: hidden;
+    flex-shrink: 0;
+    cursor: grab;
+    transition: border-color 0.2s, box-shadow 0.2s, opacity 0.15s;
+    user-select: none;
+  }
+  .var-img-item:hover { border-color: var(--accent2); }
+  .var-img-item.dragging { opacity: 0.4; cursor: grabbing; }
+  .var-img-item.drag-over { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,111,71,0.2); }
+
+  .var-img-item img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: 5px;
+    pointer-events: none;
+  }
+
+  .var-img-item .var-pos-badge {
+    position: absolute;
+    top: 3px; left: 3px;
+    background: rgba(139,111,71,0.8);
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .var-img-item .var-img-remove {
+    position: absolute; top: 3px; right: 3px;
+    background: rgba(0,0,0,0.5); border: none; color: #fff;
+    width: 18px; height: 18px; border-radius: 50%;
+    cursor: pointer; font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+
+  .var-upload-btn {
+    width: 82px; height: 82px;
+    border-radius: 10px;
+    border: 2px dashed var(--accent2);
+    background: #fdf9f5;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; gap: 3px;
+    position: relative;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .var-upload-btn:hover { background: #f5ede2; border-color: var(--accent); }
+  .var-upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .var-upload-btn .add-icon { font-size: 1.3rem; color: var(--accent2); }
+  .var-upload-btn .add-text { font-size: 0.6rem; color: var(--muted); text-align: center; }
+
+  .add-variation-btn {
+    width: 100%;
+    padding: 11px;
+    border: 2px dashed var(--accent2);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .add-variation-btn:hover { background: #fdf5eb; border-color: var(--accent); }
+
+  /* Kit type selection */
+  .adv-kit-select { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .adv-kit-btn {
+    flex: 1; min-width: 70px; padding: 13px 8px;
+    border: 2px solid var(--border); border-radius: 12px;
+    background: var(--surface); cursor: pointer;
+    font-family: 'Playfair Display', serif; font-size: 1rem;
+    color: var(--muted); transition: all 0.2s; text-align: center;
+  }
+  .adv-kit-btn span { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+  .adv-kit-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .adv-kit-btn.active { border-color: var(--accent); background: #fdf5eb; color: var(--accent); }
+  .adv-kit-btn.active span { color: var(--accent); }
+
+  /* Slot grid */
+  .slots-grid { display: grid; gap: 12px; max-width: 420px; }
+
+  .slot {
+    border: 2px dashed var(--border); border-radius: 12px;
+    background: #fdf9f5; cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative; aspect-ratio: 1; overflow: hidden;
+    max-width: 180px;
+  }
+
+  .layout-toggle-row {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .layout-toggle-btn {
+    padding: 7px 14px; border: 2px solid var(--border); border-radius: 10px;
+    background: var(--surface); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500; color: var(--muted); transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .layout-toggle-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .layout-toggle-btn.active { border-color: var(--accent); background: #fdf5eb; color: var(--accent); }
+  .slot:hover { border-color: var(--accent2); }
+  .slot.active {
+    border-style: solid;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139,111,71,0.18);
+  }
+  .slot.filled { border-style: solid; border-color: var(--accent2); background: #fff; }
+  .slot.filled.active { border-color: var(--accent); }
+
+  .slot-placeholder {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; gap: 6px; padding: 12px;
+  }
+  .slot-placeholder .s-icon { font-size: 1.4rem; color: var(--accent2); }
+  .slot-placeholder .s-num { font-family: 'Playfair Display', serif; font-size: 0.85rem; color: var(--accent); }
+  .slot-placeholder .s-hint { font-size: 0.68rem; color: var(--muted); text-align: center; }
+
+  .slot-img { width: 100%; height: 100%; object-fit: contain; display: none; padding: 6px; }
+
+  .slot-clear {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.45); border: none; color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; font-size: 0.8rem;
+    display: none; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+
+  .slot.filled .slot-clear { display: flex; }
+  .slot.filled .slot-placeholder { display: none; }
+  .slot.filled .slot-img { display: block; }
+
+  /* Image picker panel */
+  .adv-picker {
+    display: none;
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border-radius: 12px;
+    border: 2px solid var(--accent2);
+  }
+
+  .picker-label {
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .picker-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .picker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .picker-item img {
+    width: 72px; height: 72px;
+    object-fit: contain;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 4px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .picker-item:hover img { border-color: var(--accent); transform: scale(1.06); }
+
+  .picker-item span {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .picker-cancel {
+    margin-top: 12px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+    font-family: 'DM Sans', sans-serif;
+    display: block;
+  }
+  .picker-cancel:hover { color: var(--text); }
+
+  .adv-generate-wrap { margin-top: 20px; display: flex; gap: 12px; }
+
+  canvas { display: none; }
+  .max-w { max-width: 780px; margin: 0 auto; }
+
+  /* ── RESULTS WITH VARIATIONS ── */
+  .result-kit-block {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface);
+    margin-bottom: 20px;
+  }
+
+  .result-kit-header {
+    padding: 12px 16px;
+    background: #fdf9f5;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .result-kit-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--text);
+  }
+
+  /* Variation tabs inside result */
+  .var-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .var-tab {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .var-tab:hover { border-color: var(--accent2); color: var(--accent); }
+  .var-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .result-kit-body { padding: 14px; }
+
+  .result-kit-canvas { position: relative; }
+
+  .result-kit-img {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+    margin: 0 auto;
+    background: #fafafa;
+    transition: opacity 0.2s;
+  }
+
+  .result-kit-meta {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .result-kit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .dl-btn-main {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .dl-btn-main:hover { background: #7a5e38; }
+
+  .dl-btn-all-var {
+    flex: 1;
+    padding: 10px 14px;
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .dl-btn-all-var:hover { background: #fdf5eb; }
+
+  .results-master-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 7px 13px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    margin-bottom: 24px;
+    transition: all 0.15s;
+  }
+  .back-link:hover { color: var(--accent); border-color: var(--accent2); background: #fdf5eb; }
+</style>
+</head>
+<body>
+<div class="max-w">
+  <a class="back-link" href="../index.html">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Voltar ao hub
+  </a>
+  <h1>Kit Generator</h1>
+  <p class="subtitle">Crie kits de produto — saída 1000×1000px, máx 340 KB</p>
+
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-mode-simple" onclick="setMode('simple')">
+      🪑 Simples
+      <span>1 produto, vários kits</span>
+    </button>
+    <button class="mode-btn" id="btn-mode-adv" onclick="setMode('advanced')">
+      ✦ Avançado
+      <span>Produtos diferentes por posição</span>
+    </button>
+  </div>
+
+  <!-- SIMPLE MODE -->
+  <div id="simple-mode">
+    <div class="card">
+      <h2><span class="num">1</span> Imagem do produto</h2>
+      <div class="upload-area" id="upload-area">
+        <input type="file" id="file-input" accept="image/*">
+        <div class="upload-icon">📦</div>
+        <div class="upload-text"><strong>Clique ou arraste</strong> a imagem aqui</div>
+      </div>
+      <div id="preview-wrap">
+        <img id="preview-img" src="" alt="Preview">
+        <button class="clear-btn" onclick="clearSimpleImage()">×</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span> Selecione os kits</h2>
+      <div class="kit-options">
+        <button class="kit-btn" data-kit="2" onclick="toggleKit(this)">Kit 2<span>lado a lado</span></button>
+        <button class="kit-btn" data-kit="2v" onclick="toggleKit(this)">Kit 2<span>vertical</span></button>
+        <button class="kit-btn" data-kit="2d" onclick="toggleKit(this)">Kit 2<span>diagonal</span></button>
+        <button class="kit-btn" data-kit="3" onclick="toggleKit(this)">Kit 3<span>2+1</span></button>
+        <button class="kit-btn" data-kit="4" onclick="toggleKit(this)">Kit 4<span>2×2</span></button>
+        <button class="kit-btn" data-kit="6" onclick="toggleKit(this)">Kit 6<span>3×2</span></button>
+        <button class="kit-btn" data-kit="8" onclick="toggleKit(this)">Kit 8<span>4×2</span></button>
+      </div>
+      <p class="warn">* Selecione um ou mais kits.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Gerar</h2>
+      <div class="actions">
+        <button class="btn btn-outline" id="btn-all" onclick="selectAllKits()" disabled>Selecionar todos</button>
+        <button class="btn btn-primary" id="btn-generate" onclick="generateSimple()" disabled>Gerar kits ▶</button>
+      </div>
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-label" id="progress-label">Gerando...</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADVANCED MODE -->
+  <div id="advanced-mode">
+
+    <!-- Step 1: Upload images + variations -->
+    <div class="card">
+      <h2><span class="num">1</span> Imagens dos produtos</h2>
+
+      <!-- Root upload -->
+      <div class="upload-area" id="adv-upload-area">
+        <input type="file" id="adv-file-input" accept="image/*" multiple>
+        <div class="upload-icon">📦</div>
+        <div class="upload-text">
+          <strong>Clique ou arraste</strong> as imagens aqui
+          <br><span style="font-size:0.8rem;opacity:0.8">Envie os produtos da cor/variação principal</span>
+        </div>
+      </div>
+
+      <!-- Root gallery -->
+      <div class="adv-gallery" id="adv-gallery"></div>
+
+      <!-- Variation section — only shown after root images are uploaded -->
+      <div class="variation-section" id="variation-section">
+        <label class="enable-variation-row" onclick="toggleVariationSection()">
+          <label class="toggle-switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="variation-toggle" onchange="toggleVariationSection()">
+            <span class="toggle-track"></span>
+          </label>
+          <div class="enable-variation-label">
+            <strong>🎨 Habilitar Variações</strong>
+            <span>Adicione o mesmo kit em outras cores ou versões</span>
+          </div>
+        </label>
+
+        <div class="variations-container" id="variations-container">
+          <div id="var-groups-list"></div>
+          <button class="add-variation-btn" onclick="addVariationGroup()">+ Adicionar variação</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Select kit type -->
+    <div class="card" id="adv-kit-card" style="display:none">
+      <h2><span class="num">2</span> Selecione o tipo de kit</h2>
+      <div class="adv-kit-select">
+        <button class="adv-kit-btn" data-kit="2" onclick="selectAdvKit(this)">Kit 2<span>2 posições</span></button>
+        <button class="adv-kit-btn" data-kit="3" onclick="selectAdvKit(this)">Kit 3<span>3 posições</span></button>
+        <button class="adv-kit-btn" data-kit="4" onclick="selectAdvKit(this)">Kit 4<span>4 posições</span></button>
+        <button class="adv-kit-btn" data-kit="6" onclick="selectAdvKit(this)">Kit 6<span>6 posições</span></button>
+        <button class="adv-kit-btn" data-kit="8" onclick="selectAdvKit(this)">Kit 8<span>8 posições</span></button>
+      </div>
+    </div>
+
+    <!-- Step 3: Assign images to slots -->
+    <div class="card" id="adv-assign-card" style="display:none">
+      <h2><span class="num">3</span> Monte o kit</h2>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:16px">
+        Clique em uma posição e escolha qual produto vai nela. Use as imagens da <strong>variação principal</strong> — as outras variações seguirão a mesma estrutura automaticamente.
+      </p>
+
+      <!-- Layout toggle — only shown for kit 2 -->
+      <div class="layout-toggle-row" id="layout-toggle-row" style="display:none">
+        <span style="font-size:0.82rem;color:var(--muted);align-self:center;margin-right:4px">Posição:</span>
+        <button class="layout-toggle-btn active" data-layout="horizontal" onclick="setKit2Layout(this)">⬛⬛ Lado a lado</button>
+        <button class="layout-toggle-btn" data-layout="vertical" onclick="setKit2Layout(this)">⬛<br style="display:none">⬛ Vertical</button>
+        <button class="layout-toggle-btn" data-layout="diagonal" onclick="setKit2Layout(this)">↗↙ Diagonal</button>
+      </div>
+
+      <div class="slots-grid" id="slots-grid"></div>
+
+      <!-- Image picker -->
+      <div class="adv-picker" id="adv-picker">
+        <p class="picker-label" id="picker-label">Escolha a imagem para a posição:</p>
+        <div class="picker-grid" id="picker-grid"></div>
+        <button class="picker-cancel" onclick="hidePicker()">Cancelar</button>
+      </div>
+
+      <div class="adv-generate-wrap">
+        <button class="btn btn-primary" id="btn-adv-generate" onclick="generateAdvanced()" disabled style="flex:1">Gerar Kit ▶</button>
+      </div>
+      <div class="progress-wrap" id="adv-progress-wrap">
+        <div class="progress-label" id="adv-progress-label">Gerando...</div>
+        <div class="progress-bar"><div class="progress-fill" id="adv-progress-fill"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card results" id="results-section">
+    <h2><span class="num">✓</span> Kits gerados</h2>
+    <div id="results-container"></div>
+    <div class="results-master-actions" id="results-master-actions" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+  // ── STATE ──
+  let srcImage = null;
+  let selectedKits = new Set();
+  let generatedFiles = []; // all files for "download all"
+
+  // Advanced mode
+  let advImages = [];     // root images: [{src, img, name?}, ...]
+  let advKitNum = null;
+  let advKit2Layout = 'horizontal'; // 'horizontal' | 'vertical' — only for kit 2
+  let advSlotAssign = []; // per-slot: root image index (or null)
+  let activeSlot = -1;
+
+  // Variations: [{id, name, images:[{src,img},...]}, ...]
+  let varGroups = [];
+  let varIdCounter = 0;
+  let variationsEnabled = false;
+
+  // Drag state
+  let dragSrcVarId = null;
+  let dragSrcIndex = null;
+
+  // Generated kit data: [{kitNum, variants:[{varName, url, blob, filename}]}]
+  let kitResults = [];
+
+  const kitLayouts = { '2': [2,1], '3': 'special', '4': [2,2], '6': [3,2], '8': [4,2] };
+
+  // ── MODE ──
+  function setMode(mode) {
+    document.getElementById('simple-mode').style.display = mode === 'simple' ? 'block' : 'none';
+    document.getElementById('advanced-mode').style.display = mode === 'advanced' ? 'block' : 'none';
+    document.getElementById('btn-mode-simple').classList.toggle('active', mode === 'simple');
+    document.getElementById('btn-mode-adv').classList.toggle('active', mode === 'advanced');
+    document.getElementById('results-section').style.display = 'none';
+  }
+
+  // ── SIMPLE MODE ──
+  const fileInput = document.getElementById('file-input');
+  const uploadArea = document.getElementById('upload-area');
+
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) loadSimpleImage(e.target.files[0]); });
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.background = '#f5ede2'; });
+  uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = ''; });
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault(); uploadArea.style.background = '';
+    if (e.dataTransfer.files[0]) loadSimpleImage(e.dataTransfer.files[0]);
+  });
+
+  function loadSimpleImage(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        srcImage = img;
+        document.getElementById('preview-img').src = ev.target.result;
+        document.getElementById('preview-wrap').style.display = 'block';
+        uploadArea.style.display = 'none';
+        updateSimpleButtons();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearSimpleImage() {
+    srcImage = null;
+    document.getElementById('preview-wrap').style.display = 'none';
+    uploadArea.style.display = 'block';
+    document.getElementById('preview-img').src = '';
+    fileInput.value = '';
+    updateSimpleButtons();
+  }
+
+  function toggleKit(btn) {
+    const kit = btn.dataset.kit;
+    if (selectedKits.has(kit)) { selectedKits.delete(kit); btn.classList.remove('selected'); }
+    else { selectedKits.add(kit); btn.classList.add('selected'); }
+    updateSimpleButtons();
+  }
+
+  function selectAllKits() {
+    document.querySelectorAll('.kit-btn').forEach(btn => { selectedKits.add(btn.dataset.kit); btn.classList.add('selected'); });
+    updateSimpleButtons();
+  }
+
+  function updateSimpleButtons() {
+    document.getElementById('btn-generate').disabled = !(srcImage && selectedKits.size > 0);
+    document.getElementById('btn-all').disabled = !srcImage;
+  }
+
+  async function generateSimple() {
+    const kits = Array.from(selectedKits).sort((a,b) => +a - +b);
+    const pw = document.getElementById('progress-wrap');
+    const pf = document.getElementById('progress-fill');
+    const pl = document.getElementById('progress-label');
+    const rs = document.getElementById('results-section');
+    const rc = document.getElementById('results-container');
+    const ma = document.getElementById('results-master-actions');
+
+    pw.style.display = 'block'; rs.style.display = 'none';
+    rc.innerHTML = ''; ma.innerHTML = ''; generatedFiles = [];
+
+    const simpleGrid = document.createElement('div');
+    simpleGrid.className = 'results-grid';
+    rc.appendChild(simpleGrid);
+
+    const results = [];
+    for (let i = 0; i < kits.length; i++) {
+      const kitRaw = kits[i];
+      // '2v' = kit 2 layout vertical
+      const kitNum = kitRaw === '2v' ? '2' : kitRaw === '2d' ? '2' : kitRaw;
+      const layoutVariant = kitRaw === '2v' ? 'vertical' : kitRaw === '2d' ? 'diagonal' : 'horizontal';
+      pl.textContent = `Gerando Kit ${kitRaw}...`;
+      pf.style.width = `${(i / kits.length) * 100}%`;
+      await tick();
+      const blob = await renderKit(kitNum, null, layoutVariant);
+      const url = URL.createObjectURL(blob);
+      results.push({ kit: kitRaw, blob, url });
+      generatedFiles.push({ url, filename: `kit_${kitRaw}.jpg` });
+    }
+
+    pf.style.width = '100%'; pl.textContent = 'Concluído!';
+    showSimpleResults(results, simpleGrid);
+
+    ma.innerHTML = `<button class="btn btn-primary" style="flex:1;font-size:1rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits</button>`;
+
+    rs.style.display = 'block';
+    rs.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => { pw.style.display = 'none'; }, 800);
+  }
+
+  // ── ADVANCED MODE ──
+  const advFileInput = document.getElementById('adv-file-input');
+  const advUploadArea = document.getElementById('adv-upload-area');
+
+  advFileInput.addEventListener('change', e => { if (e.target.files.length) loadAdvImages(e.target.files, 'root'); });
+  advUploadArea.addEventListener('dragover', e => { e.preventDefault(); advUploadArea.style.background = '#f5ede2'; });
+  advUploadArea.addEventListener('dragleave', () => { advUploadArea.style.background = ''; });
+  advUploadArea.addEventListener('drop', e => {
+    e.preventDefault(); advUploadArea.style.background = '';
+    if (e.dataTransfer.files.length) loadAdvImages(e.dataTransfer.files, 'root');
+  });
+
+  function loadAdvImages(files, target, varId) {
+    let loaded = 0;
+    const arr = Array.from(files);
+    arr.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          if (target === 'root') {
+            advImages.push({ src: ev.target.result, img });
+          } else {
+            const vg = varGroups.find(v => v.id === varId);
+            if (vg) vg.images.push({ src: ev.target.result, img });
+          }
+          loaded++;
+          if (loaded === arr.length) {
+            if (target === 'root') renderAdvGallery();
+            else renderVarGroup(varId);
+          }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderAdvGallery() {
+    const gallery = document.getElementById('adv-gallery');
+    gallery.innerHTML = '';
+
+    advImages.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'adv-gallery-item';
+      div.innerHTML = `
+        <img src="${item.src}" alt="Produto ${i+1}">
+        <span class="gal-label">Prod. ${i+1}</span>
+        <button class="gal-remove" onclick="removeRootImage(${i})">×</button>
+      `;
+      gallery.appendChild(div);
+    });
+
+    if (advImages.length > 0) {
+      const addMore = document.createElement('div');
+      addMore.className = 'adv-add-more';
+      addMore.innerHTML = `
+        <input type="file" accept="image/*" multiple onchange="if(this.files.length) loadAdvImages(this.files,'root')">
+        <div class="add-icon">+</div>
+        <div class="add-text">Adicionar<br>mais</div>
+      `;
+      gallery.appendChild(addMore);
+    }
+
+    const hasImages = advImages.length > 0;
+    document.getElementById('adv-kit-card').style.display = hasImages ? 'block' : 'none';
+    document.getElementById('variation-section').classList.toggle('visible', hasImages);
+
+    // Re-render all variation groups since root images changed
+    varGroups.forEach(vg => renderVarGroup(vg.id));
+
+    if (advKitNum) rebuildSlotDisplay();
+    updateAdvButton();
+  }
+
+  function removeRootImage(index) {
+    advImages.splice(index, 1);
+    advSlotAssign = advSlotAssign.map(v => {
+      if (v === index) return null;
+      if (v !== null && v > index) return v - 1;
+      return v;
+    });
+    renderAdvGallery();
+    updateAdvButton();
+  }
+
+  // ── VARIATION GROUPS ──
+  function toggleVariationSection() {
+    const chk = document.getElementById('variation-toggle');
+    variationsEnabled = chk.checked;
+    const container = document.getElementById('variations-container');
+    container.classList.toggle('open', variationsEnabled);
+    if (variationsEnabled && varGroups.length === 0) addVariationGroup();
+    updateAdvButton();
+  }
+
+  function addVariationGroup() {
+    const id = ++varIdCounter;
+    varGroups.push({ id, name: `Variação ${id}`, images: [] });
+    renderVarGroupsList();
+    updateAdvButton();
+  }
+
+  function removeVariationGroup(id) {
+    varGroups = varGroups.filter(v => v.id !== id);
+    renderVarGroupsList();
+    updateAdvButton();
+  }
+
+  function renderVarGroupsList() {
+    const list = document.getElementById('var-groups-list');
+    list.innerHTML = '';
+    varGroups.forEach(vg => {
+      const el = buildVarGroupElement(vg);
+      list.appendChild(el);
+    });
+  }
+
+  function renderVarGroup(varId) {
+    const list = document.getElementById('var-groups-list');
+    const existing = document.getElementById(`vg-${varId}`);
+    const vg = varGroups.find(v => v.id === varId);
+    if (!vg) return;
+    const el = buildVarGroupElement(vg);
+    if (existing) existing.replaceWith(el);
+    else list.appendChild(el);
+  }
+
+  function buildVarGroupElement(vg) {
+    const div = document.createElement('div');
+    div.className = 'var-group';
+    div.id = `vg-${vg.id}`;
+
+    const header = document.createElement('div');
+    header.className = 'var-group-header';
+    header.innerHTML = `
+      <div class="var-group-num">${varGroups.indexOf(vg) + 1}</div>
+      <input class="var-name-input" value="${vg.name}" placeholder="Nome da variação (ex: Cinza)"
+        onchange="varGroups.find(v=>v.id===${vg.id}).name=this.value"
+        oninput="varGroups.find(v=>v.id===${vg.id}).name=this.value">
+      <button class="var-group-remove" onclick="removeVariationGroup(${vg.id})" title="Remover">✕</button>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'var-group-body';
+
+    const rootCount = advImages.length;
+    const varCount = vg.images.length;
+    const hint = document.createElement('p');
+    hint.className = 'var-hint';
+
+    if (rootCount === 0) {
+      hint.textContent = 'Envie as imagens da variação principal primeiro.';
+    } else if (varCount < rootCount) {
+      hint.textContent = `Envie ${rootCount} imagem(ns) nesta variação (${rootCount - varCount} faltando). Arraste para reorganizar na mesma ordem da variação principal.`;
+    } else {
+      hint.textContent = `✓ ${varCount} imagens. Arraste para reordenar na mesma ordem dos produtos principais.`;
+      hint.style.color = '#5a8a5a';
+    }
+    body.appendChild(hint);
+
+    const gallery = document.createElement('div');
+    gallery.className = 'var-gallery';
+    gallery.id = `vg-gallery-${vg.id}`;
+
+    vg.images.forEach((item, i) => {
+      const imgDiv = document.createElement('div');
+      imgDiv.className = 'var-img-item';
+      imgDiv.draggable = true;
+      imgDiv.dataset.varId = vg.id;
+      imgDiv.dataset.index = i;
+      imgDiv.innerHTML = `
+        <img src="${item.src}" alt="">
+        <span class="var-pos-badge">${i + 1}</span>
+        <button class="var-img-remove" onclick="removeVarImage(${vg.id}, ${i})">×</button>
+      `;
+
+      imgDiv.addEventListener('dragstart', e => {
+        dragSrcVarId = vg.id;
+        dragSrcIndex = i;
+        imgDiv.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      imgDiv.addEventListener('dragend', () => {
+        imgDiv.classList.remove('dragging');
+        document.querySelectorAll('.var-img-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+      });
+      imgDiv.addEventListener('dragover', e => {
+        e.preventDefault();
+        if (dragSrcVarId === vg.id && dragSrcIndex !== i) {
+          imgDiv.classList.add('drag-over');
+        }
+      });
+      imgDiv.addEventListener('dragleave', () => imgDiv.classList.remove('drag-over'));
+      imgDiv.addEventListener('drop', e => {
+        e.preventDefault();
+        imgDiv.classList.remove('drag-over');
+        if (dragSrcVarId === vg.id && dragSrcIndex !== null && dragSrcIndex !== i) {
+          const tVg = varGroups.find(v => v.id === vg.id);
+          const moved = tVg.images.splice(dragSrcIndex, 1)[0];
+          tVg.images.splice(i, 0, moved);
+          renderVarGroup(vg.id);
+          updateAdvButton();
+        }
+      });
+
+      gallery.appendChild(imgDiv);
+    });
+
+    // Upload button
+    if (vg.images.length < rootCount || rootCount === 0) {
+      const uploadBtn = document.createElement('div');
+      uploadBtn.className = 'var-upload-btn';
+      uploadBtn.innerHTML = `
+        <input type="file" accept="image/*" multiple onchange="if(this.files.length) loadAdvImages(this.files,'var',${vg.id})">
+        <div class="add-icon">+</div>
+        <div class="add-text">Adicionar<br>imagens</div>
+      `;
+      gallery.appendChild(uploadBtn);
+    } else if (vg.images.length > 0) {
+      // Still allow adding more if needed
+      const uploadBtn = document.createElement('div');
+      uploadBtn.className = 'var-upload-btn';
+      uploadBtn.innerHTML = `
+        <input type="file" accept="image/*" multiple onchange="if(this.files.length) loadAdvImages(this.files,'var',${vg.id})">
+        <div class="add-icon">+</div>
+        <div class="add-text">Adicionar<br>mais</div>
+      `;
+      gallery.appendChild(uploadBtn);
+    }
+
+    body.appendChild(gallery);
+    div.appendChild(header);
+    div.appendChild(body);
+    return div;
+  }
+
+  function removeVarImage(varId, index) {
+    const vg = varGroups.find(v => v.id === varId);
+    if (vg) {
+      vg.images.splice(index, 1);
+      renderVarGroup(varId);
+      updateAdvButton();
+    }
+  }
+
+  // ── SLOT BUILDING ──
+  function selectAdvKit(btn) {
+    document.querySelectorAll('.adv-kit-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    advKitNum = btn.dataset.kit;
+    // Show/hide layout toggle row
+    const layoutRow = document.getElementById('layout-toggle-row');
+    if (advKitNum === '2') {
+      layoutRow.style.display = 'flex';
+    } else {
+      layoutRow.style.display = 'none';
+      advKit2Layout = 'horizontal';
+    }
+    buildSlots(advKitNum);
+  }
+
+  function setKit2Layout(btn) {
+    document.querySelectorAll('.layout-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    advKit2Layout = btn.dataset.layout;
+    // Rebuild slot grid to reflect horizontal vs vertical preview
+    buildSlots('2');
+  }
+
+  function buildSlots(kitRaw) {
+    const kitNum = kitRaw === '2v' ? '2' : kitRaw;
+    const count = parseInt(kitNum);
+    advSlotAssign = Array(count).fill(null);
+    activeSlot = -1;
+
+    const grid = document.getElementById('slots-grid');
+    grid.innerHTML = '';
+
+    // Grid columns: vertical kit2 = 1 col, diagonal kit2 = 2 col offset, kit3 = 2, others from layout
+    let cols;
+    if (kitNum === '2' && advKit2Layout === 'vertical') cols = 1;
+    else if (kitNum === '2') cols = 2;
+    else if (kitNum === '3') cols = 2;
+    else cols = kitLayouts[kitNum][0] || 2;
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+    for (let i = 0; i < count; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.index = i;
+      slot.onclick = () => activateSlot(i);
+
+      if (kitNum === '3' && i === 2) {
+        slot.style.gridColumn = '1 / -1';
+        slot.style.maxWidth = '50%';
+        slot.style.margin = '0 auto';
+        slot.style.width = '100%';
+      }
+
+      slot.innerHTML = `
+        <div class="slot-placeholder">
+          <div class="s-icon">🖼</div>
+          <div class="s-num">Posição ${i + 1}</div>
+          <div class="s-hint">Clique para<br>escolher imagem</div>
+        </div>
+        <img class="slot-img" id="slot-img-${i}" src="" alt="">
+        <button class="slot-clear" onclick="clearSlot(event,${i})">×</button>
+      `;
+      grid.appendChild(slot);
+    }
+
+    document.getElementById('adv-assign-card').style.display = 'block';
+    hidePicker();
+    updateAdvButton();
+  }
+
+  function rebuildSlotDisplay() {
+    advSlotAssign.forEach((imgIndex, i) => {
+      const slotEl = document.querySelector(`.slot[data-index="${i}"]`);
+      const slotImg = document.getElementById(`slot-img-${i}`);
+      if (!slotEl || !slotImg) return;
+      if (imgIndex !== null && advImages[imgIndex]) {
+        slotImg.src = advImages[imgIndex].src;
+        slotEl.classList.add('filled');
+      } else {
+        slotImg.src = '';
+        slotEl.classList.remove('filled');
+        advSlotAssign[i] = null;
+      }
+    });
+    updateAdvButton();
+  }
+
+  function activateSlot(index) {
+    activeSlot = index;
+    document.querySelectorAll('.slot').forEach((s, i) => s.classList.toggle('active', i === index));
+    showPicker(index);
+  }
+
+  function showPicker(slotIndex) {
+    const picker = document.getElementById('adv-picker');
+    const grid = document.getElementById('picker-grid');
+    const label = document.getElementById('picker-label');
+
+    label.textContent = `Escolha o produto para a Posição ${slotIndex + 1}:`;
+    grid.innerHTML = '';
+
+    advImages.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'picker-item';
+      const isSelected = advSlotAssign[slotIndex] === i;
+      div.innerHTML = `
+        <img src="${item.src}" alt="Produto ${i+1}" style="${isSelected ? 'border-color:var(--accent);box-shadow:0 0 0 2px rgba(139,111,71,0.25)' : ''}">
+        <span>Produto ${i+1}</span>
+      `;
+      div.onclick = () => assignImageToSlot(slotIndex, i);
+      grid.appendChild(div);
+    });
+
+    picker.style.display = 'block';
+    setTimeout(() => picker.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+
+  function hidePicker() {
+    document.getElementById('adv-picker').style.display = 'none';
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
+    activeSlot = -1;
+  }
+
+  function assignImageToSlot(slotIndex, imageIndex) {
+    advSlotAssign[slotIndex] = imageIndex;
+    const slotEl = document.querySelector(`.slot[data-index="${slotIndex}"]`);
+    const slotImg = document.getElementById(`slot-img-${slotIndex}`);
+    slotImg.src = advImages[imageIndex].src;
+    slotEl.classList.add('filled');
+    hidePicker();
+    updateAdvButton();
+  }
+
+  function clearSlot(e, index) {
+    e.stopPropagation();
+    advSlotAssign[index] = null;
+    const slotEl = document.querySelector(`.slot[data-index="${index}"]`);
+    const slotImg = document.getElementById(`slot-img-${index}`);
+    slotImg.src = '';
+    slotEl.classList.remove('filled');
+    hidePicker();
+    updateAdvButton();
+  }
+
+  function updateAdvButton() {
+    const slotsOk = advSlotAssign.length > 0 && advSlotAssign.every(v => v !== null);
+    let varsOk = true;
+    if (variationsEnabled) {
+      varsOk = varGroups.length > 0 && varGroups.every(vg => vg.images.length === advImages.length);
+    }
+    document.getElementById('btn-adv-generate').disabled = !(slotsOk && varsOk);
+  }
+
+  // ── GENERATE ──
+  async function generateAdvanced() {
+    const pw = document.getElementById('adv-progress-wrap');
+    const pf = document.getElementById('adv-progress-fill');
+    const pl = document.getElementById('adv-progress-label');
+    const rs = document.getElementById('results-section');
+    const rc = document.getElementById('results-container');
+    const ma = document.getElementById('results-master-actions');
+
+    pw.style.display = 'block'; rs.style.display = 'none';
+    rc.innerHTML = ''; ma.innerHTML = '';
+    generatedFiles = []; kitResults = [];
+
+    // Build all variant sets: root + each variation group
+    const allVariants = [
+      { name: 'Principal', images: advImages },
+      ...varGroups.map(vg => ({ name: vg.name, images: vg.images }))
+    ];
+
+    const totalJobs = allVariants.length;
+    let jobDone = 0;
+
+    // We generate ONE kit (advKitNum) with all variants
+    const kitResult = { kitNum: advKitNum, variants: [] };
+
+    for (const variant of allVariants) {
+      pl.textContent = `Gerando Kit ${advKitNum} — ${variant.name}...`;
+      pf.style.width = `${(jobDone / totalJobs) * 90}%`;
+      await tick();
+
+      // Map slots: advSlotAssign[i] is a root image index → find equivalent in this variant
+      const images = advSlotAssign.map(rootIdx => variant.images[rootIdx]?.img || variant.images[rootIdx % variant.images.length]?.img);
+      const advLayoutVariant = advKitNum === '2' ? advKit2Layout : 'horizontal';
+      const advKitNumReal = (advKitNum === '2v' || advKitNum === '2d') ? '2' : advKitNum;
+      const blob = await renderKit(advKitNumReal, images, advLayoutVariant);
+      const url = URL.createObjectURL(blob);
+      const filename = `kit${advKitNum}_${sanitizeFilename(variant.name)}.jpg`;
+
+      kitResult.variants.push({ varName: variant.name, url, blob, filename });
+      generatedFiles.push({ url, filename });
+      jobDone++;
+    }
+
+    kitResults.push(kitResult);
+
+    pf.style.width = '100%'; pl.textContent = 'Concluído!';
+
+    // Render results
+    const block = buildKitResultBlock(kitResult);
+    rc.appendChild(block);
+
+    // Master actions
+    if (variationsEnabled && varGroups.length > 0) {
+      ma.innerHTML = `
+        <button class="btn btn-primary" style="flex:1;font-size:0.95rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits e variações</button>
+      `;
+    } else {
+      ma.innerHTML = `
+        <button class="btn btn-primary" style="flex:1;font-size:0.95rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits</button>
+      `;
+    }
+
+    rs.style.display = 'block';
+    rs.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => { pw.style.display = 'none'; }, 800);
+  }
+
+  function buildKitResultBlock(kitResult) {
+    const block = document.createElement('div');
+    block.className = 'result-kit-block';
+
+    const hasVariants = kitResult.variants.length > 1;
+    const firstVar = kitResult.variants[0];
+
+    // Header with tabs
+    const header = document.createElement('div');
+    header.className = 'result-kit-header';
+
+    const title = document.createElement('span');
+    title.className = 'result-kit-title';
+    title.textContent = `Kit ${kitResult.kitNum} avançado`;
+    header.appendChild(title);
+
+    if (hasVariants) {
+      const tabs = document.createElement('div');
+      tabs.className = 'var-tabs';
+      kitResult.variants.forEach((v, idx) => {
+        const tab = document.createElement('button');
+        tab.className = 'var-tab' + (idx === 0 ? ' active' : '');
+        tab.textContent = v.varName;
+        tab.onclick = () => switchKitVariant(block, kitResult, idx, tabs, tab);
+        tabs.appendChild(tab);
+      });
+      header.appendChild(tabs);
+    }
+
+    block.appendChild(header);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'result-kit-body';
+
+    const kb = Math.round(firstVar.blob.size / 1024);
+
+    const canvas = document.createElement('div');
+    canvas.className = 'result-kit-canvas';
+    const img = document.createElement('img');
+    img.className = 'result-kit-img';
+    img.src = firstVar.url;
+    img.alt = `Kit ${kitResult.kitNum}`;
+    canvas.appendChild(img);
+
+    const meta = document.createElement('div');
+    meta.className = 'result-kit-meta';
+    meta.textContent = `${firstVar.varName} · ${kb} KB`;
+
+    const actions = document.createElement('div');
+    actions.className = 'result-kit-actions';
+
+    const dlMain = document.createElement('button');
+    dlMain.className = 'dl-btn-main';
+    dlMain.id = `dl-current-${kitResult.kitNum}`;
+    dlMain.textContent = `⬇ Baixar ${firstVar.varName}`;
+    dlMain.addEventListener('click', () => downloadFile(firstVar.url, firstVar.filename));
+    actions.appendChild(dlMain);
+
+    if (hasVariants) {
+      const dlAll = document.createElement('button');
+      dlAll.className = 'dl-btn-all-var';
+      dlAll.textContent = '⬇ Todas as variações';
+      dlAll.addEventListener('click', () => {
+        kitResult.variants.forEach((v, i) => {
+          setTimeout(() => downloadFile(v.url, v.filename), i * 350);
+        });
+      });
+      actions.appendChild(dlAll);
+    }
+
+    body.appendChild(canvas);
+    body.appendChild(meta);
+    body.appendChild(actions);
+
+    block._kitResult = kitResult;
+    block.appendChild(body);
+    return block;
+  }
+
+  function switchKitVariant(block, kitResult, varIdx, tabsEl, clickedTab) {
+    const variant = kitResult.variants[varIdx];
+    const img = block.querySelector('.result-kit-img');
+    const meta = block.querySelector('.result-kit-meta');
+    const dlBtn = block.querySelector('.dl-btn-main');
+
+    img.style.opacity = '0.5';
+    setTimeout(() => {
+      img.src = variant.url;
+      img.style.opacity = '1';
+    }, 120);
+
+    const kb = Math.round(variant.blob.size / 1024);
+    meta.textContent = `${variant.varName} · ${kb} KB`;
+    dlBtn.textContent = `⬇ Baixar ${variant.varName}`;
+    dlBtn.onclick = () => downloadFile(variant.url, variant.filename);
+
+    // Update tabs
+    tabsEl.querySelectorAll('.var-tab').forEach(t => t.classList.remove('active'));
+    clickedTab.classList.add('active');
+  }
+
+  function downloadAllVariants(filenames, kitNum) {
+    const kit = kitResults.find(k => k.kitNum === kitNum);
+    if (!kit) return;
+    kit.variants.forEach(async (v, i) => {
+      await new Promise(r => setTimeout(r, i * 300));
+      downloadFile(v.url, v.filename);
+    });
+  }
+
+  // ── RENDERING ──
+  function tick() { return new Promise(r => setTimeout(r, 40)); }
+
+  function getCropBox(img, threshold = 240) {
+    const tmp = document.createElement('canvas');
+    tmp.width = img.naturalWidth; tmp.height = img.naturalHeight;
+    const ctx2 = tmp.getContext('2d');
+    ctx2.drawImage(img, 0, 0);
+    const data = ctx2.getImageData(0, 0, tmp.width, tmp.height).data;
+    const W = tmp.width, H = tmp.height;
+    let minX = W, minY = H, maxX = 0, maxY = 0;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+        if (a > 20 && (r < threshold || g < threshold || b < threshold)) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+        }
+      }
+    }
+    const m = 6;
+    return {
+      sx: Math.max(0, minX - m), sy: Math.max(0, minY - m),
+      sw: Math.min(W, maxX + m) - Math.max(0, minX - m),
+      sh: Math.min(H, maxY + m) - Math.max(0, minY - m),
+    };
+  }
+
+  const FILL_FACTOR = 0.92;
+
+  function drawImgScaled(ctx, img, x, y, cellW, cellH, globalScale, crop) {
+    let dw = crop.sw * globalScale;
+    let dh = crop.sh * globalScale;
+    if (dw > cellW || dh > cellH) {
+      const fit = Math.min(cellW / dw, cellH / dh);
+      dw *= fit; dh *= fit;
+    }
+    ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh,
+      x + (cellW - dw) / 2, y + (cellH - dh) / 2, dw, dh);
+  }
+
+  function computeGlobalScale(crops, cellW, cellH) {
+    const maxFit = Math.min(...crops.map(c => Math.min(cellW / c.sw, cellH / c.sh)));
+    return maxFit * FILL_FACTOR;
+  }
+
+  // layoutVariant: 'horizontal' | 'vertical' (only used for kit 2)
+  async function renderKit(kitNum, images, layoutVariant) {
+    const OUT = 1000;
+    const canvas = document.getElementById('canvas');
+    canvas.width = OUT; canvas.height = OUT;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, OUT, OUT);
+
+    const img = i => images ? images[i] : srcImage;
+
+    // ── KIT 3: 2 poltronas em cima, 1 sofá embaixo (centralizado, maior) ──
+    if (kitNum === '3') {
+      const pad = 30, gap = 14;
+      const topH  = Math.round(OUT * 0.47);
+      const botH  = OUT - pad * 2 - topH - gap;
+      const halfW = (OUT - pad * 2 - gap) / 2;
+
+      const imgs  = [img(0), img(1), img(2)];
+      const crops = imgs.map(im => getCropBox(im));
+
+      // Use a single shared scale: most generous that still fits every item in its own cell
+      const scaleTop = computeGlobalScale(crops.slice(0,2), halfW, topH);
+      const scaleBot = computeGlobalScale([crops[2]], OUT - pad * 2, botH);
+      // Take the max so objects are as large as possible; hard-cap enforced inside drawImgScaled
+      const gs = Math.max(scaleTop, scaleBot);
+
+      drawImgScaled(ctx, imgs[0], pad,               pad, halfW, topH, gs, crops[0]);
+      drawImgScaled(ctx, imgs[1], pad + halfW + gap,  pad, halfW, topH, gs, crops[1]);
+      // Bottom item has full width available
+      drawImgScaled(ctx, imgs[2], pad, pad + topH + gap, OUT - pad * 2, botH, gs, crops[2]);
+      return compressToTarget(canvas, 340 * 1024);
+    }
+
+    // ── KIT 2: lado a lado OU vertical ──
+    if (kitNum === '2') {
+      const pad = 50, gap = 20;
+      const imgs  = [img(0), img(1)];
+      const crops = imgs.map(im => getCropBox(im));
+
+      if (layoutVariant === 'vertical') {
+        const cellW = OUT - pad * 2;
+        const cellH = (OUT - pad * 2 - gap) / 2;
+        const gs = computeGlobalScale(crops, cellW, cellH);
+        drawImgScaled(ctx, imgs[0], pad, pad,               cellW, cellH, gs, crops[0]);
+        drawImgScaled(ctx, imgs[1], pad, pad + cellH + gap,  cellW, cellH, gs, crops[1]);
+      } else if (layoutVariant === 'diagonal') {
+        // Img 0: grande, topo-esquerda (60% largura, 60% altura)
+        // Img 1: menor, baixo-direita (60% largura, 60% altura), sobrepondo levemente
+        const bigW  = Math.round(OUT * 0.60);
+        const bigH  = Math.round(OUT * 0.60);
+        const smlW  = Math.round(OUT * 0.58);
+        const smlH  = Math.round(OUT * 0.58);
+        const x0 = pad;
+        const y0 = pad;
+        const x1 = OUT - pad - smlW;
+        const y1 = OUT - pad - smlH;
+        // Shared scale relative to the bigger cell
+        const gs = computeGlobalScale(crops, bigW, bigH);
+        drawImgScaled(ctx, imgs[0], x0, y0, bigW, bigH, gs, crops[0]);
+        drawImgScaled(ctx, imgs[1], x1, y1, smlW, smlH, gs, crops[1]);
+      } else {
+        // lado a lado (padrão)
+        const cellW = (OUT - pad * 2 - gap) / 2;
+        const cellH = OUT - pad * 2;
+        const gs = computeGlobalScale(crops, cellW, cellH);
+        drawImgScaled(ctx, imgs[0], pad,               pad, cellW, cellH, gs, crops[0]);
+        drawImgScaled(ctx, imgs[1], pad + cellW + gap,  pad, cellW, cellH, gs, crops[1]);
+      }
+      return compressToTarget(canvas, 340 * 1024);
+    }
+
+    // ── GRID KITS: 4, 6, 8 ──
+    {
+      const pad = 30, gap = 10;
+      const [cols, rows] = kitLayouts[kitNum];
+      const cellW = (OUT - pad * 2 - gap * (cols - 1)) / cols;
+      const cellH = (OUT - pad * 2 - gap * (rows - 1)) / rows;
+      const total = cols * rows;
+
+      const imgs  = Array.from({ length: total }, (_, i) => img(i));
+      const crops = imgs.map(im => getCropBox(im));
+      const gs    = computeGlobalScale(crops, cellW, cellH);
+
+      for (let i = 0; i < total; i++) {
+        const col = i % cols, row = Math.floor(i / cols);
+        drawImgScaled(ctx, imgs[i],
+          pad + col * (cellW + gap), pad + row * (cellH + gap),
+          cellW, cellH, gs, crops[i]);
+      }
+      return compressToTarget(canvas, 340 * 1024);
+    }
+  }
+
+  async function compressToTarget(canvas, maxBytes) {
+    let quality = 0.92, blob;
+    for (let a = 0; a < 10; a++) {
+      blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', quality));
+      if (blob.size <= maxBytes) break;
+      quality -= 0.06;
+      if (quality < 0.3) break;
+    }
+    return blob;
+  }
+
+  function showSimpleResults(results, grid) {
+    results.forEach(({ kit, blob, url }) => {
+      const kb = Math.round(blob.size / 1024);
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <div class="result-header">
+          <strong>Kit ${kit}</strong>
+          <span class="result-size">${kb} KB</span>
+        </div>
+        <div class="result-img-wrap">
+          <img class="result-img" src="${url}" alt="Kit ${kit}">
+        </div>
+        <button class="download-btn" onclick="downloadFile('${url}','kit_${kit}.jpg')">⬇ Baixar Kit ${kit}</button>
+      `;
+      grid.appendChild(item);
+    });
+  }
+
+  function sanitizeFilename(name) {
+    return name.replace(/[^a-zA-Z0-9\-_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  }
+
+  function downloadFile(url, filename) {
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+  }
+
+  async function downloadAll() {
+    for (let i = 0; i < generatedFiles.length; i++) {
+      const { url, filename } = generatedFiles[i];
+      downloadFile(url, filename);
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+</script>
+</body>
+</html>
