@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<link rel="icon" type="image/x-icon" href="../favicon.ico">  
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Catálogo de Prompts — Drossi</title>
@@ -9,282 +9,83 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f5f0eb;
-  --surface: #fff;
-  --accent: #8b6f47;
-  --accent2: #c4a882;
-  --text: #2c2417;
-  --muted: #9b8e82;
-  --border: #e8ddd4;
-  --shadow: rgba(139,111,71,0.12);
-  --radius: 20px;
+  --bg: #f5f0eb; --surface: #fff; --accent: #8b6f47; --accent2: #c4a882;
+  --text: #2c2417; --muted: #9b8e82; --border: #e8ddd4;
+  --shadow: rgba(139,111,71,0.12); --radius: 20px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
-
-/* NAV */
 .top-nav { padding: 24px 24px 0; max-width: 1100px; margin: 0 auto; }
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--muted);
-  text-decoration: none;
-  padding: 7px 13px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--surface);
-  transition: all 0.15s;
-}
-.back-link:hover { color: var(--accent); border-color: var(--accent2); background: #fdf5eb; }
-
-/* HERO */
-.hero { background: var(--surface); border-bottom: 1px solid var(--border); padding: 44px 24px 36px; text-align: center; position: relative; overflow: hidden; }
-.hero::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 60% 50% at 20% 50%, rgba(196,168,130,0.13) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 40%, rgba(139,111,71,0.08) 0%, transparent 70%); pointer-events:none; }
+.back-link { display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:500; color:var(--muted); text-decoration:none; padding:7px 13px; border:1px solid var(--border); border-radius:20px; background:var(--surface); transition:all .15s; }
+.back-link:hover { color:var(--accent); border-color:var(--accent2); background:#fdf5eb; }
+.hero { background:var(--surface); border-bottom:1px solid var(--border); padding:44px 24px 36px; text-align:center; position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 50% at 20% 50%,rgba(196,168,130,0.13) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 80% 40%,rgba(139,111,71,0.08) 0%,transparent 70%); pointer-events:none; }
 .hero-badge { display:inline-block; background:#fdf5eb; border:1px solid var(--accent2); color:var(--accent); font-size:.72rem; font-weight:500; letter-spacing:.12em; text-transform:uppercase; padding:5px 14px; border-radius:20px; margin-bottom:16px; }
 .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(1.6rem,4vw,2.3rem); line-height:1.15; margin-bottom:8px; position:relative; }
 .hero h1 em { font-style:italic; color:var(--accent); }
 .hero p { color:var(--muted); font-size:.9rem; max-width:420px; margin:0 auto; line-height:1.6; position:relative; }
-
-/* CONTAINER */
-.container { max-width: 1100px; margin: 0 auto; padding: 40px 24px 72px; }
+.container { max-width:1100px; margin:0 auto; padding:40px 24px 72px; }
 .section-label { font-size:.72rem; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--accent2); margin-bottom:24px; display:flex; align-items:center; gap:10px; }
 .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
-
-/* GRID */
-.prompts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media(max-width:780px) { .prompts-grid { grid-template-columns: 1fr; } }
-
-/* CARD */
-.prompt-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 16px var(--shadow);
-  transition: box-shadow .2s;
-  animation: fadeUp .45s ease both;
-}
-.prompt-card:nth-child(2) { animation-delay: .1s; }
-.prompt-card:hover { box-shadow: 0 6px 32px rgba(139,111,71,0.16); }
-
-/* CARD HEADER */
-.card-top { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+.prompts-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media(max-width:780px) { .prompts-grid { grid-template-columns:1fr; } }
+.prompt-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 16px var(--shadow); transition:box-shadow .2s; animation:fadeUp .45s ease both; }
+.prompt-card:nth-child(2) { animation-delay:.1s; }
+.prompt-card:nth-child(3) { animation-delay:.2s; }
+.prompt-card:hover { box-shadow:0 6px 32px rgba(139,111,71,0.16); }
+.card-top { padding:18px 20px 14px; border-bottom:1px solid var(--border); }
 .card-tag { font-size:.65rem; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); background:#fdf5eb; border:1px solid var(--accent2); padding:3px 9px; border-radius:10px; display:inline-block; margin-bottom:7px; }
 .card-title { font-family:'Playfair Display',serif; font-size:1.08rem; color:var(--text); }
 .card-model { font-size:.72rem; color:var(--muted); margin-top:3px; }
-
-/* ── IMAGE AREA ── */
-.img-area {
-  position: relative;
-  background: #eee8e0;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
-
-/* Main (large) image — clickable to open lightbox */
-.main-img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  cursor: zoom-in;
-  transition: opacity .28s ease;
-}
-.main-img:hover { opacity: .92; }
-
-/* Zoom hint overlay */
-.zoom-hint {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: rgba(44,36,23,0.48);
-  backdrop-filter: blur(4px);
-  color: #fff;
-  font-size: .62rem;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  padding: 4px 9px;
-  border-radius: 8px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .2s;
-}
-.img-area:hover .zoom-hint { opacity: 1; }
-
-/* Thumb (small) — clickable to swap */
-.thumb-wrap {
-  position: absolute;
-  bottom: 12px; left: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-}
-.thumb-label {
-  font-size: .58rem;
-  font-weight: 500;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-  color: #fff;
-  background: rgba(44,36,23,0.52);
-  backdrop-filter: blur(4px);
-  padding: 3px 7px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.thumb-img {
-  width: 76px; height: 76px;
-  border-radius: 10px;
-  border: 2.5px solid rgba(255,255,255,0.88);
-  object-fit: cover;
-  cursor: pointer;
-  box-shadow: 0 2px 14px rgba(0,0,0,0.28);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.thumb-img:hover { transform: scale(1.07); box-shadow: 0 4px 20px rgba(0,0,0,0.38); }
-
-/* swap animation */
-@keyframes fadeImg { from{opacity:0; transform:scale(.97)} to{opacity:1; transform:scale(1)} }
-.img-swap { animation: fadeImg .25s ease both; }
-
-/* CAROUSEL BAR */
-.carousel-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 11px 20px;
-  border-bottom: 1px solid var(--border);
-  min-height: 44px;
-}
-.carousel-bar.hidden { display: none; }
-.dot-btn {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--border);
-  border: none; cursor: pointer; padding: 0;
-  transition: background .2s, transform .2s;
-}
-.dot-btn.active { background: var(--accent); transform: scale(1.3); }
-.arr-btn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--muted);
-  transition: border-color .15s, color .15s, background .15s;
-  flex-shrink: 0;
-}
-.arr-btn:hover { border-color: var(--accent); color: var(--accent); background: #fdf5eb; }
-
-/* ── PROMPT SECTION ── */
-.card-actions {
-  padding: 14px 20px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.usage-hint { font-size: .72rem; color: var(--muted); display:flex; align-items:center; gap:5px; }
-.btn-group { display: flex; gap: 8px; }
-
-.action-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  border-radius: 9px;
-  padding: 9px 16px;
-  font-family: 'DM Sans', sans-serif; font-size: .78rem; font-weight: 500;
-  cursor: pointer; transition: background .15s, transform .12s, color .15s;
-  white-space: nowrap; border: none;
-}
-.action-btn:hover { transform: translateY(-1px); }
-.action-btn:active { transform: translateY(0); }
-
-.btn-expand {
-  background: #f5f0eb;
-  color: var(--accent);
-  border: 1px solid var(--border);
-}
-.btn-expand:hover { background: #ede4d8; border-color: var(--accent2); }
-.btn-expand.open { background: #fdf5eb; border-color: var(--accent2); }
-
-.btn-copy {
-  background: var(--accent); color: #fff;
-}
-.btn-copy:hover { background: #7a5f3a; }
-.btn-copy.ok { background: #5a8a5a; }
-
-/* Prompt expandido */
-.prompt-drawer {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height .3s ease, padding .3s ease;
-  border-top: 0px solid var(--border);
-}
-.prompt-drawer.open {
-  max-height: 280px;
-  border-top: 1px solid var(--border);
-}
-.prompt-box {
-  font-size: .78rem;
-  color: var(--text);
-  line-height: 1.65;
-  background: #fdfaf7;
-  padding: 14px 20px;
-  white-space: pre-wrap;
-  font-family: 'Courier New', monospace;
-  max-height: 280px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent2) transparent;
-}
-
-/* LIGHTBOX */
-.lightbox {
-  position: fixed; inset: 0;
-  background: rgba(20,16,10,0.9);
-  backdrop-filter: blur(8px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
-  opacity: 0; pointer-events: none;
-  transition: opacity .22s ease;
-}
-.lightbox.open { opacity: 1; pointer-events: all; }
-.lightbox img {
-  max-width: min(90vw, 720px);
-  max-height: 88vh;
-  object-fit: contain;
-  border-radius: 14px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
-  transform: scale(.94);
-  transition: transform .22s ease;
-}
-.lightbox.open img { transform: scale(1); }
-.lb-close {
-  position: absolute; top: 20px; right: 24px;
-  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-  color: #fff; border-radius: 50%; width: 38px; height: 38px;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:18px;
-  transition: background .15s;
-}
-.lb-close:hover { background: rgba(255,255,255,0.24); }
-.lb-caption {
-  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
-  color: rgba(255,255,255,0.75); font-size: .78rem;
-  background: rgba(0,0,0,0.45); padding: 6px 16px; border-radius: 20px;
-  white-space: nowrap; pointer-events: none;
-}
-
-/* FOOTER */
+.img-area { position:relative; background:#eee8e0; aspect-ratio:1/1; overflow:hidden; }
+.main-img { width:100%; height:100%; object-fit:cover; display:block; cursor:zoom-in; transition:opacity .28s ease; }
+.main-img:hover { opacity:.92; }
+.zoom-hint { position:absolute; top:10px; right:10px; background:rgba(44,36,23,.48); backdrop-filter:blur(4px); color:#fff; font-size:.62rem; letter-spacing:.07em; text-transform:uppercase; padding:4px 9px; border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s; }
+.img-area:hover .zoom-hint { opacity:1; }
+.thumb-wrap { position:absolute; bottom:12px; left:12px; display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+.thumb-label { font-size:.58rem; font-weight:500; letter-spacing:.09em; text-transform:uppercase; color:#fff; background:rgba(44,36,23,.52); backdrop-filter:blur(4px); padding:3px 7px; border-radius:6px; white-space:nowrap; }
+.thumb-img { width:76px; height:76px; border-radius:10px; border:2.5px solid rgba(255,255,255,.88); object-fit:cover; cursor:pointer; box-shadow:0 2px 14px rgba(0,0,0,.28); transition:transform .18s ease,box-shadow .18s ease; }
+.thumb-img:hover { transform:scale(1.07); box-shadow:0 4px 20px rgba(0,0,0,.38); }
+@keyframes fadeImg { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+.img-swap { animation:fadeImg .25s ease both; }
+.carousel-bar { display:flex; align-items:center; justify-content:center; gap:10px; padding:11px 20px; border-bottom:1px solid var(--border); min-height:44px; }
+.carousel-bar.hidden { display:none; }
+.dot-btn { width:7px; height:7px; border-radius:50%; background:var(--border); border:none; cursor:pointer; padding:0; transition:background .2s,transform .2s; }
+.dot-btn.active { background:var(--accent); transform:scale(1.3); }
+.arr-btn { background:none; border:1px solid var(--border); border-radius:8px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); transition:border-color .15s,color .15s,background .15s; flex-shrink:0; }
+.arr-btn:hover { border-color:var(--accent); color:var(--accent); background:#fdf5eb; }
+.fabric-selector { display:flex; align-items:center; gap:8px; padding:11px 20px; border-bottom:1px solid var(--border); flex-wrap:wrap; min-height:44px; }
+.fabric-label-text { font-size:.65rem; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); flex-shrink:0; margin-right:2px; }
+.fabric-btn { display:inline-flex; align-items:center; gap:5px; border:1.5px solid var(--border); border-radius:18px; padding:4px 10px; font-family:'DM Sans',sans-serif; font-size:.7rem; font-weight:500; cursor:pointer; background:var(--bg); color:var(--muted); transition:all .18s; white-space:nowrap; }
+.fabric-btn:hover { border-color:var(--accent2); color:var(--accent); background:#fdf5eb; }
+.fabric-btn.active { border-color:var(--accent); color:var(--accent); background:#fdf5eb; box-shadow:0 0 0 2px rgba(139,111,71,.12); }
+.fabric-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.card-actions { padding:14px 20px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.usage-hint { font-size:.72rem; color:var(--muted); display:flex; align-items:center; gap:5px; }
+.btn-group { display:flex; gap:8px; }
+.action-btn { display:inline-flex; align-items:center; gap:7px; border-radius:9px; padding:9px 16px; font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:500; cursor:pointer; transition:background .15s,transform .12s,color .15s; white-space:nowrap; border:none; }
+.action-btn:hover { transform:translateY(-1px); }
+.action-btn:active { transform:translateY(0); }
+.btn-expand { background:#f5f0eb; color:var(--accent); border:1px solid var(--border); }
+.btn-expand:hover { background:#ede4d8; border-color:var(--accent2); }
+.btn-expand.open { background:#fdf5eb; border-color:var(--accent2); }
+.btn-copy { background:var(--accent); color:#fff; }
+.btn-copy:hover { background:#7a5f3a; }
+.btn-copy.ok { background:#5a8a5a; }
+.prompt-drawer { overflow:hidden; max-height:0; transition:max-height .3s ease,padding .3s ease; border-top:0px solid var(--border); }
+.prompt-drawer.open { max-height:280px; border-top:1px solid var(--border); }
+.prompt-box { font-size:.78rem; color:var(--text); line-height:1.65; background:#fdfaf7; padding:14px 20px; white-space:pre-wrap; font-family:'Courier New',monospace; max-height:280px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--accent2) transparent; }
+.lightbox { position:fixed; inset:0; background:rgba(20,16,10,.9); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; pointer-events:none; transition:opacity .22s ease; }
+.lightbox.open { opacity:1; pointer-events:all; }
+.lightbox img { max-width:min(90vw,720px); max-height:88vh; object-fit:contain; border-radius:14px; box-shadow:0 24px 80px rgba(0,0,0,.7); transform:scale(.94); transition:transform .22s ease; }
+.lightbox.open img { transform:scale(1); }
+.lb-close { position:absolute; top:20px; right:24px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); color:#fff; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:background .15s; }
+.lb-close:hover { background:rgba(255,255,255,.24); }
+.lb-caption { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.75); font-size:.78rem; background:rgba(0,0,0,.45); padding:6px 16px; border-radius:20px; white-space:nowrap; pointer-events:none; }
 footer { text-align:center; padding:24px; font-size:.75rem; color:var(--muted); border-top:1px solid var(--border); }
-
 @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-.hero { animation: fadeUp .45s ease both; }
-.section-label { animation: fadeUp .45s .12s ease both; }
+.hero { animation:fadeUp .45s ease both; }
+.section-label { animation:fadeUp .45s .12s ease both; }
 </style>
 </head>
 <body>
@@ -306,14 +107,13 @@ footer { text-align:center; padding:24px; font-size:.75rem; color:var(--muted); 
   <div class="section-label">Prompts disponíveis</div>
   <div class="prompts-grid">
 
-    <!-- ═══ CARD: CROQUI ═══ -->
+    <!-- CARD: CROQUI -->
     <div class="prompt-card">
       <div class="card-top">
         <div class="card-tag">Produto · Mobiliário</div>
         <div class="card-title">Croqui Técnico</div>
         <div class="card-model">Gemini Flash · requer imagem de apoio</div>
       </div>
-
       <div class="img-area" id="area-croqui">
         <img class="main-img" id="main-croqui" src="" alt="Resultado" onclick="openLightbox('croqui')">
         <div class="zoom-hint">🔍 ampliar</div>
@@ -322,44 +122,29 @@ footer { text-align:center; padding:24px; font-size:.75rem; color:var(--muted); 
           <img class="thumb-img" id="thumb-croqui" src="" alt="Input" onclick="swapImages('croqui')">
         </div>
       </div>
-
       <div class="carousel-bar" id="bar-croqui">
-        <button class="arr-btn" onclick="goSlide('croqui',-1)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4.5 6.5 8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="arr-btn" onclick="goSlide('croqui',-1)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4.5 6.5 8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button class="dot-btn" onclick="setSlide('croqui',0)"></button>
         <button class="dot-btn" onclick="setSlide('croqui',1)"></button>
-        <button class="arr-btn" onclick="goSlide('croqui',1)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2.5L8.5 6.5 5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="arr-btn" onclick="goSlide('croqui',1)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2.5L8.5 6.5 5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-
       <div class="card-actions">
         <span class="usage-hint">🖼️ Envie a foto do produto junto</span>
         <div class="btn-group">
-          <button class="action-btn btn-expand" onclick="togglePrompt('croqui',this)">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Ver prompt
-          </button>
-          <button class="action-btn btn-copy" onclick="copyPrompt('croqui',this)">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-            Copiar
-          </button>
+          <button class="action-btn btn-expand" onclick="togglePrompt('croqui',this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Ver prompt</button>
+          <button class="action-btn btn-copy" onclick="copyPrompt('croqui',this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar</button>
         </div>
       </div>
-      <div class="prompt-drawer" id="drawer-croqui">
-        <div class="prompt-box" id="prompt-croqui"></div>
-      </div>
+      <div class="prompt-drawer" id="drawer-croqui"><div class="prompt-box" id="prompt-croqui"></div></div>
     </div>
 
-    <!-- ═══ CARD: FUNDO KITS ═══ -->
+    <!-- CARD: FUNDO KITS -->
     <div class="prompt-card">
       <div class="card-top">
         <div class="card-tag">Lifestyle · Ambiente</div>
         <div class="card-title">Gerador de Fundo para Kits</div>
         <div class="card-model">Gemini Flash · requer imagem de apoio</div>
       </div>
-
       <div class="img-area" id="area-fundo">
         <img class="main-img" id="main-fundo" src="" alt="Resultado" onclick="openLightbox('fundo')">
         <div class="zoom-hint">🔍 ampliar</div>
@@ -368,35 +153,64 @@ footer { text-align:center; padding:24px; font-size:.75rem; color:var(--muted); 
           <img class="thumb-img" id="thumb-fundo" src="" alt="Input" onclick="swapImages('fundo')">
         </div>
       </div>
-
       <div class="carousel-bar" id="bar-fundo">
-        <button class="arr-btn" onclick="goSlide('fundo',-1)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4.5 6.5 8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="arr-btn" onclick="goSlide('fundo',-1)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4.5 6.5 8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button class="dot-btn" onclick="setSlide('fundo',0)"></button>
         <button class="dot-btn" onclick="setSlide('fundo',1)"></button>
         <button class="dot-btn" onclick="setSlide('fundo',2)"></button>
-        <button class="arr-btn" onclick="goSlide('fundo',1)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2.5L8.5 6.5 5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
+        <button class="arr-btn" onclick="goSlide('fundo',1)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2.5L8.5 6.5 5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-
       <div class="card-actions">
         <span class="usage-hint">🖼️ Envie a foto do kit junto</span>
         <div class="btn-group">
-          <button class="action-btn btn-expand" onclick="togglePrompt('fundo',this)">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Ver prompt
-          </button>
-          <button class="action-btn btn-copy" onclick="copyPrompt('fundo',this)">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-            Copiar
-          </button>
+          <button class="action-btn btn-expand" onclick="togglePrompt('fundo',this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Ver prompt</button>
+          <button class="action-btn btn-copy" onclick="copyPrompt('fundo',this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar</button>
         </div>
       </div>
-      <div class="prompt-drawer" id="drawer-fundo">
-        <div class="prompt-box" id="prompt-fundo"></div>
+      <div class="prompt-drawer" id="drawer-fundo"><div class="prompt-box" id="prompt-fundo"></div></div>
+    </div>
+
+    <!-- CARD: TEXTURA DE ESTOFADO (mesmo tamanho dos outros) -->
+    <div class="prompt-card">
+      <div class="card-top">
+        <div class="card-tag">Produto · Mobiliário</div>
+        <div class="card-title">Textura de Estofado</div>
+        <div class="card-model">Gemini Flash · selecione o tecido</div>
       </div>
+      <div class="img-area" id="area-textura">
+        <img class="main-img" id="main-textura" src="" alt="Resultado" onclick="openLightbox('textura')">
+        <div class="zoom-hint">🔍 ampliar</div>
+        <div class="thumb-wrap">
+          <div class="thumb-label">Apoio</div>
+          <img class="thumb-img" id="thumb-textura" src="" alt="Apoio" onclick="openLightbox('textura-apoio')">
+        </div>
+      </div>
+      <div class="fabric-selector">
+        <span class="fabric-label-text">Tecido:</span>
+        <button class="fabric-btn active" id="fab-boucle" onclick="selectFabric('boucle',this)">
+          <span class="fabric-dot" style="background:#f0ece4;border:1px solid #c4a882;"></span>Bouclê
+        </button>
+        <button class="fabric-btn" id="fab-corino" onclick="selectFabric('corino',this)">
+          <span class="fabric-dot" style="background:#ede8df;border:1px solid #c4a882;"></span>Corino
+        </button>
+        <button class="fabric-btn" id="fab-linho" onclick="selectFabric('linho',this)">
+          <span class="fabric-dot" style="background:#d9c9a8;border:1px solid #b89a6a;"></span>Linho
+        </button>
+        <button class="fabric-btn" id="fab-suede" onclick="selectFabric('suede',this)">
+          <span class="fabric-dot" style="background:#e8dfd3;border:1px solid #b89a6a;"></span>Suede
+        </button>
+        <button class="fabric-btn" id="fab-veludo" onclick="selectFabric('veludo',this)">
+          <span class="fabric-dot" style="background:#ede8e0;border:1px solid #b89a6a;"></span>Veludo
+        </button>
+      </div>
+      <div class="card-actions">
+        <span class="usage-hint">🖼️ Envie a foto do produto</span>
+        <div class="btn-group">
+          <button class="action-btn btn-expand" onclick="togglePrompt('textura',this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Ver prompt</button>
+          <button class="action-btn btn-copy" onclick="copyTexturaPrompt(this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar</button>
+        </div>
+      </div>
+      <div class="prompt-drawer" id="drawer-textura"><div class="prompt-box" id="prompt-textura"></div></div>
     </div>
 
   </div>
@@ -404,20 +218,20 @@ footer { text-align:center; padding:24px; font-size:.75rem; color:var(--muted); 
 
 <footer>Catálogo de Prompts · Drossi Marketing</footer>
 
-<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-  <button class="lb-close" onclick="closeLightbox(null)">✕</button>
+  <button class="lb-close" onclick="closeLightbox(null)">&#x2715;</button>
   <img id="lb-img" src="" alt="">
   <div class="lb-caption" id="lb-caption"></div>
 </div>
 
 <script>
-// ─────────────────────────────────────────
-// DATA
-// ─────────────────────────────────────────
-// Cada slide: result = imagem principal, input = miniatura de apoio
-// Para trocar input/output: troque os valores de "result" e "input" entre si
-// As imagens estão embutidas como base64 — funcionam no GitHub Pages sem arquivos externos
+
+// =================================================================
+// CARDS ORIGINAIS (croqui + fundo) — IMPORTANTE
+// SUBSTITUA estes dois objetos pelos do seu index.html original.
+// Procure no seu arquivo atual por "const slides = {" e "const promptsData = {",
+// e cole aqui os valores completos com as imagens (que ja estao em base64).
+// =================================================================
 const slides = {
   croqui: [
     {
@@ -455,124 +269,126 @@ const slides = {
     }
   ]
 };
-
-const prompts = {
+const promptsData = {
   croqui: "You are a professional technical furniture sketch artist.\n\u00a0\nYour task:\n1. Analyze the product image provided CAREFULLY\n2. Create a clean technical sketch of the furniture piece in isometric/3D perspective\n3. Capture ONLY the actual structural and design elements visible in the reference image\n4. DO NOT ADD any lines, details, seams, or features that don't clearly exist in the original product\n5. Be minimal and precise - less is better than too much\n\u00a0\nTECHNICAL SPECIFICATIONS:\n\u00a0\nDrawing Style:\n- Professional technical sketch / architectural drawing style\n- Clean, precise outlines ONLY\n- Line-based drawing (NOT hand-drawn or sketchy)\n- White background only\n- Black lines for all elements\n\u00a0\nLine Work:\n- Primary outlines: 1.5-2px black lines\n- Secondary contours for depth: 0.75-1px black lines\n- Minimal internal details - only obvious structural elements\n- NO double lines or duplicated edges\n- No filled areas, no colors, no textures\n- No gradient or shadowing\n\u00a0\nWhat to Include:\n- Main structural outline (frame boundaries)\n- Cushions as simple shapes (only if clearly visible)\n- Cushion wrinkles/folds ONLY if they're obvious structural features\n- Backrest outline\n- Arm structure\n- Base/feet as shown\n- Seat depth definition (minimal lines)\n\u00a0\nWhat to EXCLUDE:\n- Measurement numbers or dimensions\n- Dimension lines or arrows\n- Scale indicators\n- Color or material representation\n- Textures or patterns\n- Shading or shadows\n- Hand-drawn appearance\n- Subtle interior seams or stitching lines\n- Lines that don't represent actual structural elements\n- Any modifications to the original product design\n- ANY details not clearly visible in the reference image\n\u00a0\nPerspective:\n- Maintain a clear 3/4 isometric view\n- Adapt the angle to best show the product's characteristics\n- Ensure all key features are visible and understandable\n- Use proper convergence lines for depth\n\u00a0\nOutput Format:\n- SVG or clean HTML/CSS vector format\n- High quality, print-ready\n- Suitable for catalogs, presentations, and technical documentation\n\u00a0\nRemember: This is a TECHNICAL DRAWING, not an artistic rendering. Focus on clarity, precision, and professional presentation.",
   fundo:  "Generate a single cohesive, photo-realistic lifestyle scene where the furniture\ncollection shown in the provided image is naturally part of the environment\nfrom the beginning \u2014 not composited or placed on top of a background.\n\nThe scene should feel like the furniture was always there when the photo was taken.\nApply natural shadows beneath and around each piece that match the ambient light\ndirection of the scene. The furniture should interact with the environment through\nrealistic light reflections, soft cast shadows on the floor and walls, and slight\ndepth-of-field blur on background elements.\n\nFURNITURE ARRANGEMENT:\n- The provided image may contain one or more furniture pieces (a full collection/kit)\n- If the image shows multiple pieces, arrange them naturally together as a cohesive\nseating area, as interior designers would place them in a real living room\n- The arrangement must feel organic and functional, not like a catalog grid layout\n- All pieces from the image must appear in the final scene, fully visible\nand unobstructed\n- Maintain consistent scale and proportion between all pieces, relative to\neach other and to the environment\n\nENVIRONMENT: Place the furniture in a warm, cozy and inviting living room interior.\nThe scene must include:\n- A warm beige or off-white wall with a vertical slatted wood panel (ripado)\naccent wall behind or beside the furniture\n- A soft, thick area rug in neutral tones (beige, cream, or light grey)\nunderneath the furniture\n- 2 to 3 framed wall art pieces or abstract paintings on the wall,\nwith thin natural wood or black frames\n- Natural green plants: one large floor plant (such as a fiddle leaf fig\nor monstera) in a ceramic pot, and one or two smaller plants on side surfaces\n- A low wooden coffee table placed exclusively in front of the furniture,\ncompletely outside the furniture's silhouette\n- Warm ambient lighting: a floor lamp or pendant light casting soft golden light\n\nCRITICAL RESTRICTIONS \u2014 STRICTLY ENFORCED:\n- Every piece of furniture must appear EXACTLY as in the reference image,\ncompletely clean and unaltered on its surface\n- DO NOT place any object, fabric, blanket, throw, pillow, cushion, clothing,\nor any item of any kind ON TOP of or DRAPED OVER any furniture piece\n- DO NOT add any cushions or pillows that were not already present\nin the original product image\n- Every furniture surface must remain completely clean, empty and identical\nto the reference image at all times\n- NO object, plant, furniture, or decorative item may appear in front of,\noverlap, or partially cover any furniture piece's silhouette at any point\n- Plants must be placed only to the sides or behind the furniture, never in front\n- The coffee table must stay completely outside and in front of the\nfurniture's silhouette, never overlapping it\n- If any element cannot fit without touching or overlapping the furniture,\nremove that element entirely\n- All furniture pieces must be 100% fully visible, completely unobstructed,\nwith their entire surfaces clean and untouched\n\nPRODUCT RESTRICTIONS:\n- Do NOT change anything about the furniture: preserve the exact shape, color,\nfabric texture, stitching details, size proportions, and all physical\ncharacteristics of every piece exactly as shown in the reference image\n- Do NOT recolor, reshape, or modify any furniture piece in any way\n- Do NOT add anything to any piece that was not in the original image\n\nThe final image must look like a professional interior lifestyle product photo,\nwith natural warm lighting, soft golden tones, and a cozy sophisticated aesthetic.\nHigh resolution, sharp product focus, photo-realistic."
 };
+// =================================================================
 
-// state per card: index + whether images are swapped
-const state = {
-  croqui: { idx: 0, swapped: false },
-  fundo:  { idx: 0, swapped: false }
+// --- TEXTURA: caminhos das imagens (pasta imagens/textura/) ---
+const TEX_BASE = './imagens/textura/';
+const texturaApoio = TEX_BASE + 'apoio.png';
+const texturaFabrics = {
+  boucle: { label:"Bouclê", img: TEX_BASE + 'boucle.png', prompt: "Apply a BOUCLE FABRIC texture onto the furniture piece shown in the image.\n\nBOUCLE TEXTURE \u2014 EXACT SPECIFICATION:\n- Color: warm off-white / cream ivory\n- The texture grain must be EXTREMELY FINE \u2014 like the surface of an eggshell or fine-grain sandpaper\n- Grain size: at final image resolution, each grain should be NO LARGER than 1\u20132 pixels\n- The surface must look almost smooth at first glance \u2014 texture is only perceptible on very close inspection\n- Uniform, consistent, zero variation in grain density across all surfaces\n- Matte finish, no shine, no gloss\n\nREFERENCE MENTAL IMAGE:\n- Imagine a luxury CGI armchair render from a brand like BoConcept, Restoration Hardware or Minotti\n- The fabric looks nearly smooth and flat \u2014 almost like a very fine linen or soft cotton\n- You would NOT describe this chair as \"textured\" at first glance \u2014 only \"soft\" and \"refined\"\n- The grain is so fine it reads as a COLOR and MATERIAL, not as a physical texture\n\nGRAIN SIZE \u2014 THIS IS THE MOST IMPORTANT INSTRUCTION:\n- Current result has grains that are TOO LARGE and TOO IRREGULAR\n- Reduce grain size by 80% compared to what feels natural\n- If you think the grain looks right, make it smaller\n- The final grain must be MICROSCOPIC relative to the furniture size\n- Think: the difference between coarse sea salt and fine powdered sugar \u2014 use powdered sugar scale\n\nREQUIREMENTS:\n- Preserve ALL original: shape, silhouette, proportions, tufting seam grid \u2014 do NOT alter\n- Replace ONLY the fabric \u2014 metal frame stays 100% identical\n- Tufting seam lines must remain clearly visible\n- Maintain original lighting, shadows and background exactly\n- Background: white, clean, studio lighting, soft ground shadow\n\nDO NOT:\n- Do NOT make grains large or irregular\n- Do NOT create bumps, lumps or any surface relief\n- Do NOT blur or smear the fabric\n- Do NOT alter the metal frame\n- Do NOT change composition or camera angle\n\nOUTPUT:\n- Sharp, clean, CGI product photo quality\n- Same framing and composition as original\n- Minimum 1000x1000px" },
+  corino: { label:"Corino", img: TEX_BASE + 'corino.png', prompt: "Apply a CORINO (faux leather / synthetic vinyl leather) texture onto the furniture piece shown in the image.\n\nCORINO FABRIC \u2014 EXACT SPECIFICATION:\n- Color: warm cream / off-white with very subtle ivory undertones \u2014 classic corino neutral tone\n- Surface is SMOOTH and FLAT \u2014 no weave, no fiber, no fabric grain\n- Finish: semi-gloss \u2014 more reflective than matte fabric, but NOT shiny like patent leather\n- The surface has a very fine, barely perceptible pebble grain \u2014 micro-texture only, like high-grade vinyl upholstery\n- Grain pattern is uniform and extremely subtle \u2014 at final resolution it reads as a smooth surface with just enough texture to look real\n- Under direct light: a clean, soft specular highlight appears \u2014 smooth and elongated, never sparkly or metallic\n- Under shadow: surface darkens naturally and uniformly \u2014 grain disappears in dark areas\n- The material has a slight plasticity / tautness to it \u2014 the way corino pulls slightly over cushion edges and tufting seams\n- Tufting seam lines must remain clearly visible and slightly indented \u2014 corino pulls tight around seam channels\n- At seam edges and tufting intersections: very subtle tension lines, as corino is stretched over foam\n\nREFERENCE MENTAL IMAGE:\n- Imagine a CGI product render of a modern Brazilian-style armchair upholstered in premium corino\n- The look is clean, uniform, sophisticated \u2014 like high-end salon or reception furniture\n- You would describe this chair as \"corino\" or \"faux leather\" immediately\n- The surface reads as smooth, durable, and slightly cold to the touch \u2014 unlike fabric which reads as warm\n\nGRAIN SIZE \u2014 CRITICAL:\n- The pebble grain must be extremely fine \u2014 barely visible at full resolution\n- Think: the difference between cheap vinyl and premium automotive leather \u2014 use premium automotive scale\n- If the grain looks right, make it finer\n- Reduce grain scale by 70% compared to what feels natural\n- The grain must NEVER look like crocodile, snake or embossed leather\n\nREQUIREMENTS:\n- Preserve ALL original characteristics: shape, silhouette, proportions, tufting seam grid \u2014 do NOT alter any of them\n- Replace ONLY the upholstery \u2014 metal frame stays 100% identical, do not touch it\n- Tufting seam lines must remain clearly visible over the new material\n- Maintain original lighting, shadows and background exactly\n\nBACKGROUND DETECTION (apply automatically):\n- Analyze the product image and detect the background type before applying the texture\nIF background is WHITE/INFINITE STUDIO:\n  - Keep background perfectly white and clean\n  - Maintain sharp and clean product edges\n  - Preserve studio lighting, soft shadows and reflections on material\nIF background is AMBIENT/DECORATED (room, scenery, props, furniture):\n  - Keep the ENTIRE environment exactly as is\n  - The material must blend naturally with the room's color temperature and lighting\n  - Respect warm/cool tones from the ambient light sources\n\nDO NOT:\n- Do NOT make it look like genuine leather with deep grain or pores\n- Do NOT make it matte like fabric\n- Do NOT make it shiny like patent leather or lacquer\n- Do NOT add stitching that wasn't in the original\n- Do NOT make it look like crocodile, snake or embossed leather\n- Do NOT alter the metal frame\n- Do NOT change composition, camera angle or framing\n\nOUTPUT:\n- Sharp, clean, CGI product photo quality\n- Same framing and composition as original\n- Minimum 1000x1000px" },
+  linho:  { label:"Linho",  img: TEX_BASE + 'linho.png',  prompt: "Apply a LINEN FABRIC texture onto the furniture piece shown in the image.\n\nLINEN FABRIC \u2014 EXACT SPECIFICATION:\n- Color: natural linen / warm beige with very slight golden-tan undertones \u2014 the classic raw linen tone\n- The weave is visible but refined: a tight, even plain weave with fine horizontal and vertical threads crossing each other\n- Thread thickness: very fine \u2014 at final resolution, individual threads should be barely distinguishable, like a high-thread-count fabric\n- The surface is FLAT and SMOOTH \u2014 no relief, no bump, no raised fibers\n- Matte finish with a very subtle natural sheen on thread intersections only \u2014 like light catching a tightly woven fabric\n- The weave pattern is perfectly regular and uniform across ALL surfaces \u2014 no random variation, no patchy areas\n- Micro-texture from the natural fiber: very faint, hair-thin fiber irregularities along each thread \u2014 giving it an organic, natural feel without looking rough\n- Under light: thread intersections catch a soft, barely-there highlight \u2014 the overall surface reads as flat and refined\n- Under shadow: weave remains visible but subtle \u2014 never disappears, never dominates\n\nREFERENCE MENTAL IMAGE:\n- Imagine a luxury CGI furniture render upholstered in natural linen \u2014 as seen in brands like Arhaus, RH or Maison du Monde\n- The fabric looks clean, natural, sophisticated \u2014 like high-quality tailoring fabric\n- You would describe this chair as \"linen\" immediately, but the texture never distracts from the form\n\nWEAVE SIZE \u2014 CRITICAL:\n- Scale the weave pattern proportionally to the furniture size\n- For an armchair: individual threads should be extremely fine \u2014 1\u20132px at final resolution\n- The weave must never look like burlap, canvas or rough fabric\n- Think: the difference between burlap and a fine linen shirt \u2014 use fine linen shirt scale\n- If you think the weave looks right, make it finer\n- Reduce weave scale by 70% compared to what feels natural\n\nREQUIREMENTS:\n- Preserve ALL original characteristics: shape, silhouette, proportions, tufting seam grid \u2014 do NOT alter any of them\n- Replace ONLY the fabric \u2014 metal frame stays 100% identical, do not touch it\n- Tufting seam lines must remain clearly visible over the new fabric\n- Maintain original lighting, shadows and background exactly\n\nBACKGROUND DETECTION (apply automatically):\n- Analyze the product image and detect the background type before applying the texture\nIF background is WHITE/INFINITE STUDIO:\n- Keep background perfectly white and clean\n- Maintain sharp and clean product edges\n- Preserve studio lighting, soft shadows and reflections on fabric\nIF background is AMBIENT/DECORATED (room, scenery, props, furniture):\n- Keep the ENTIRE environment exactly as is \u2014 walls, floor, objects, lighting fixtures, plants, decorations\n- The fabric must blend naturally with the room's color temperature and lighting\n- Respect warm/cool tones from the ambient light sources\n- Maintain depth of field, bokeh or any photographic effect originally present\n- The product must look naturally placed in the scene, not composited\n\nDO NOT:\n- Do NOT make it look like burlap, hessian or canvas\n- Do NOT create visible bumps or surface relief\n- Do NOT make it shiny or silky\n- Do NOT make fibers fuzzy or frayed\n- Do NOT make the weave oversized or chunky\n- Do NOT blur or smear the fabric\n- Do NOT alter the metal frame\n- Do NOT change composition, camera angle or composition\n\nOUTPUT:\n- Sharp, clean, CGI product photo quality\n- Same framing and composition as original\n- Minimum 1000x1000px" },
+  suede:  { label:"Suede",  img: TEX_BASE + 'suede.png',  prompt: "Apply a SUEDE fabric texture onto the furniture piece shown in the image.\n\nSUEDE FABRIC \u2014 EXACT SPECIFICATION:\n- Color: warm cream / natural off-white with very subtle warm beige undertones \u2014 classic neutral suede tone\n- Surface finish: MATTE and VELVETY \u2014 zero gloss, zero shine, completely non-reflective\n- The surface has an ultra-fine, directional nap \u2014 microscopic raised fibers all oriented in the same direction, like brushed microfiber suede\n- Nap direction follows the natural drape of each upholstered panel \u2014 fibers flow downward on vertical surfaces, radially outward on curved surfaces\n- Under direct light: the surface lightens softly where light hits \u2014 a diffuse, directional brightening, never a specular highlight\n- Under shadow: the surface darkens to a deeper warm beige \u2014 suede absorbs light rather than reflecting it\n- The directional nap creates a subtle \"shading shift\" \u2014 areas where nap is brushed toward the viewer appear slightly lighter, areas brushed away appear slightly darker\n- This gives the chair a soft, dimensional look without any gloss or reflection\n- At seam lines: the nap naturally separates and realigns \u2014 creating a very fine, clean edge definition\n- Surface reads as: soft, warm, tactile \u2014 you can almost feel the texture through the screen\n\nREFERENCE MENTAL IMAGE:\n- Imagine a CGI product render of a luxury armchair upholstered in premium microsuede or alcantara\n- Think: Natuzzi, Arketipo or high-end Brazilian furniture brands using nobuck/suede\n- The fabric looks incredibly soft, matte and refined \u2014 like holding a peach\n- The chair reads as \"suede\" or \"nobuck\" immediately \u2014 warm, sophisticated, tactile\n- The texture enhances the curved silhouette without overpowering it\n\nNAP/FIBER SIZE \u2014 CRITICAL:\n- The nap must be extremely fine \u2014 individual fibers invisible at normal resolution\n- The surface reads as smooth and matte, with only a very subtle directional sheen\n- Think: the difference between cheap felt and premium Alcantara \u2014 use Alcantara scale\n- If the nap looks right, make it finer\n- Reduce fiber scale by 70% compared to what feels natural\n- The surface must NEVER look like felt, velvet, chenille or rough fabric\n\nREQUIREMENTS:\n- Preserve ALL original characteristics: shape, silhouette, proportions, curved panels, seam lines \u2014 do NOT alter any of them\n- Replace ONLY the upholstery material\n- Seam lines must remain clearly visible \u2014 suede panels meet at sharp, clean edges\n- Maintain original lighting, shadows and background exactly\n- The matte finish must respect the original light direction \u2014 shadows and highlights stay in the same position, only the material quality changes\n\nBACKGROUND DETECTION (apply automatically):\n- Analyze the product image and detect the background type before applying the texture\nIF background is WHITE/INFINITE STUDIO:\n  - Keep background perfectly white and clean\n  - Maintain sharp and clean product edges\n  - Preserve studio lighting \u2014 suede will absorb light beautifully in this setting\nIF background is AMBIENT/DECORATED (room, scenery, props):\n  - Keep the ENTIRE environment exactly as is\n  - The suede must blend naturally with the room's color temperature\n  - Warm ambient light will enrich the suede tones naturally\n\nDO NOT:\n- Do NOT make it shiny, glossy or semi-gloss in any way\n- Do NOT make it look like velvet (velvet has stronger nap contrast)\n- Do NOT make it look like felt (felt has no directional nap)\n- Do NOT make it look like chenille or boucl\u00e9\n- Do NOT add visible individual fibers or fuzz\n- Do NOT make the surface rough or coarse\n- Do NOT change the silhouette, shape or panel seam positions\n- Do NOT alter any structural element\n- Do NOT change composition, camera angle or framing\n\nOUTPUT:\n- Sharp, clean, CGI product photo quality\n- Same framing and composition as original\n- Minimum 1000x1000px" },
+  veludo: { label:"Veludo", img: TEX_BASE + 'veludo.png', prompt: "Apply a VELVET fabric texture onto the furniture piece shown in the image.\nVELVET TEXTURE — EXACT SPECIFICATION:\n- Color: warm off-white / cream ivory with very subtle warm undertones\n- The surface has an ultra-fine, dense, upright pile — microscopic cut fibers standing perpendicular to the surface\n- Pile height: EXTREMELY SHORT — at final resolution, individual fibers are invisible\n- The surface reads as smooth and plush — texture is felt as a LIGHT QUALITY, not as physical fiber\n- Finish: SEMI-MATTE with soft directional sheen — velvet's signature characteristic\n- Under direct light: surface brightens to a soft, silky luminosity — a gentle, diffuse glow, never a hard specular highlight\n- Under shadow: surface deepens significantly — velvet absorbs shadow dramatically, creating rich dark areas\n- CRITICAL VELVET BEHAVIOR — crush shading: where the pile is \"brushed\" differently, subtle tonal shifts appear — lighter where pile faces the viewer, darker where it faces away\n- This creates a characteristic soft gradient across curved surfaces — the effect that makes velvet instantly recognizable\n- At seam lines: pile separates cleanly, creating a fine shadow line at each seam edge — enhancing the panel definition\nREFERENCE MENTAL IMAGE:\n- Imagine a luxury CGI furniture render upholstered in premium velvet — as seen in Fendi Casa, Cassina or Roche Bobois\n- The fabric looks incredibly rich, soft and dimensional — light plays across it in a way no other fabric does\n- You would describe this chair as \"velvet\" immediately — the crush shading effect is unmistakable\n- The texture elevates the curved silhouette — velvet and rounded forms are a perfect pairing\n- Think: a cinema seat or a jewellery box interior — that quality of velvet\nPILE/SHEEN SIZE — CRITICAL:\n- The pile must be EXTREMELY FINE and DENSE — no individual fibers visible\n- The sheen must be SOFT and DIRECTIONAL — never glossy or satin-like\n- Think: the difference between cheap polyester velvet and premium cotton velvet — use premium cotton velvet scale\n- If the sheen looks right, reduce its intensity by 40%\n- The surface must NEVER look like satin, silk or patent leather\n- The crush shading effect must be SUBTLE — a whisper, not a shout\nREQUIREMENTS:\n- Preserve ALL original characteristics: shape, silhouette, proportions, curved shell back, seam lines — do NOT alter any of them\n- Replace ONLY the upholstery material — metal frame stays 100% identical, do not touch it\n- Seam lines must remain clearly visible — pile separates naturally at each seam\n- Maintain original lighting, shadows and background exactly\n- The directional sheen must follow the original light source direction\n- Background: white, clean, studio lighting, soft ground shadow — preserve exactly\nBACKGROUND DETECTION (apply automatically):\nIF background is WHITE/INFINITE STUDIO:\n  - Keep background perfectly white and clean\n  - Maintain sharp product edges\n  - Preserve studio lighting — velvet will respond beautifully to soft studio light\nIF background is AMBIENT/DECORATED:\n  - Keep the ENTIRE environment exactly as is\n  - Velvet must blend naturally with room's color temperature\n  - Warm light will enrich the velvet tones and deepen the crush shading\nDO NOT:\n- Do NOT make it look like satin or silk (too much gloss)\n- Do NOT make it look like suede or microfiber (no directional sheen)\n- Do NOT make it look like chenille or bouclé (wrong texture type)\n- Do NOT make individual pile fibers visible\n- Do NOT create a flat, uniform surface — velvet MUST have subtle crush shading on curves\n- Do NOT make the sheen too strong or metallic\n- Do NOT alter the metal frame in any way\n- Do NOT change composition, camera angle or framing\n- Do NOT add any tufting, buttons or quilting that wasn't in the original\nOUTPUT:\n- Sharp, clean, CGI product photo quality\n- Same framing and composition as original\n- Minimum 1000x1000px" } 
+
 };
+let currentFabric = 'boucle';
 
-// ─────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('prompt-croqui').textContent = prompts.croqui;
-  document.getElementById('prompt-fundo').textContent  = prompts.fundo;
-  renderSlide('croqui');
-  renderSlide('fundo');
-});
-
-// ─────────────────────────────────────────
-// RENDER SLIDE
-// ─────────────────────────────────────────
-function renderSlide(card, animate) {
-  const s = state[card];
-  const data = slides[card][s.idx];
-  const swapped = s.swapped;
-
-  const mainSrc   = swapped ? data.input  : data.result;
-  const thumbSrc  = swapped ? data.result : data.input;
-  const thumbLbl  = swapped ? data.resultLabel : data.inputLabel;
-
-  const mainEl  = document.getElementById('main-'  + card);
-  const thumbEl = document.getElementById('thumb-' + card);
-  const lblEl   = document.getElementById('thumb-label-' + card);
-
-  if(animate) {
-    mainEl.classList.remove('img-swap');
-    void mainEl.offsetWidth; // reflow
-    mainEl.classList.add('img-swap');
-  }
-  mainEl.src  = mainSrc;
-  thumbEl.src = thumbSrc;
-  lblEl.textContent = thumbLbl;
-
-  // dots
-  const bar = document.getElementById('bar-' + card);
-  bar.querySelectorAll('.dot-btn').forEach((d,i) => d.classList.toggle('active', i === s.idx));
+function selectFabric(key, btn) {
+  currentFabric = key;
+  document.querySelectorAll('.fabric-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const m = document.getElementById('main-textura');
+  m.classList.remove('img-swap'); void m.offsetWidth;
+  m.src = texturaFabrics[key].img;
+  m.classList.add('img-swap');
+  document.getElementById('prompt-textura').textContent = texturaFabrics[key].prompt;
 }
 
-// ─────────────────────────────────────────
-// SWAP images (thumb ↔ main)
-// ─────────────────────────────────────────
-function swapImages(card) {
-  state[card].swapped = !state[card].swapped;
-  renderSlide(card, true);
-}
-
-// ─────────────────────────────────────────
-// CAROUSEL
-// ─────────────────────────────────────────
-function setSlide(card, idx) {
-  state[card].idx = idx;
-  state[card].swapped = false; // reset swap on slide change
-  renderSlide(card, true);
-}
-function goSlide(card, dir) {
-  const len = slides[card].length;
-  let idx = (state[card].idx + dir + len) % len;
-  setSlide(card, idx);
-}
-
-// ─────────────────────────────────────────
-// LIGHTBOX — opens the MAIN (large) image
-// ─────────────────────────────────────────
-function openLightbox(card) {
-  const src = document.getElementById('main-' + card).src;
-  const s = state[card];
-  const data = slides[card][s.idx];
-  const label = s.swapped ? data.inputLabel : data.resultLabel;
-  document.getElementById('lb-img').src = src;
-  document.getElementById('lb-caption').textContent = label;
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox(e) {
-  if(e && e.target !== document.getElementById('lightbox')) return;
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(null); });
-
-// ─────────────────────────────────────────
-// PROMPT DRAWER
-// ─────────────────────────────────────────
-function togglePrompt(card, btn) {
-  const drawer = document.getElementById('drawer-' + card);
-  const isOpen = drawer.classList.toggle('open');
-  btn.classList.toggle('open', isOpen);
-  const icon = isOpen
-    ? `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 8.5l4.5-4 4.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-    : `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4.5l4.5 4 4.5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  btn.innerHTML = icon + (isOpen ? ' Fechar' : ' Ver prompt');
-}
-
-// ─────────────────────────────────────────
-// COPY PROMPT
-// ─────────────────────────────────────────
-function copyPrompt(card, btn) {
-  navigator.clipboard.writeText(prompts[card]).then(() => {
-    const orig = btn.innerHTML;
-    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado!`;
+function copyTexturaPrompt(btn) {
+  navigator.clipboard.writeText(texturaFabrics[currentFabric].prompt).then(() => {
     btn.classList.add('ok');
-    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('ok'); }, 2200);
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado!';
+    setTimeout(() => {
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar';
+    }, 2000);
   });
 }
+
+const cardIdx = { croqui: 0, fundo: 0 };
+
+function renderSlide(id) {
+  const s = slides[id][cardIdx[id]];
+  if (!s) return;
+  document.getElementById('main-' + id).src = s.result;
+  document.getElementById('thumb-' + id).src = s.input;
+  const bar = document.getElementById('bar-' + id);
+  if (bar) bar.querySelectorAll('.dot-btn').forEach((d,i) => d.classList.toggle('active', i === cardIdx[id]));
+}
+
+function goSlide(id, dir) {
+  cardIdx[id] = (cardIdx[id] + dir + slides[id].length) % slides[id].length;
+  animateSlide(id);
+}
+function setSlide(id, i) { cardIdx[id] = i; animateSlide(id); }
+function animateSlide(id) {
+  const el = document.getElementById('main-' + id);
+  el.classList.remove('img-swap'); void el.offsetWidth;
+  renderSlide(id); el.classList.add('img-swap');
+}
+
+function swapImages(id) {
+  const main = document.getElementById('main-' + id);
+  const thumb = document.getElementById('thumb-' + id);
+  const label = document.getElementById('thumb-label-' + id);
+  [main.src, thumb.src] = [thumb.src, main.src];
+  if (label) label.textContent = label.textContent === 'Apoio' ? 'Saída' : 'Apoio';
+}
+
+function togglePrompt(id, btn) {
+  const drawer = document.getElementById('drawer-' + id);
+  const isOpen = drawer.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  if (id === 'textura') {
+    document.getElementById('prompt-textura').textContent = texturaFabrics[currentFabric].prompt;
+  } else {
+    document.getElementById('prompt-' + id).textContent = promptsData[id];
+  }
+}
+
+function copyPrompt(id, btn) {
+  navigator.clipboard.writeText(promptsData[id]).then(() => {
+    btn.classList.add('ok');
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado!';
+    setTimeout(() => {
+      btn.classList.remove('ok');
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M9 4V3a.9.9 0 0 0-.9-.9H3a.9.9 0 0 0-.9.9v7a.9.9 0 0 0 .9.9h1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copiar';
+    }, 2000);
+  });
+}
+
+function openLightbox(id) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  const cap = document.getElementById('lb-caption');
+  if (id === 'textura') {
+    img.src = texturaFabrics[currentFabric].img;
+    cap.textContent = 'Textura · ' + texturaFabrics[currentFabric].label;
+  } else if (id === 'textura-apoio') {
+    img.src = texturaApoio; cap.textContent = 'Imagem de apoio';
+  } else {
+    img.src = document.getElementById('main-' + id).src; cap.textContent = '';
+  }
+  lb.classList.add('open');
+}
+
+function closeLightbox(e) {
+  if (!e || e.target === document.getElementById('lightbox'))
+    document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('open'); });
+
+window.addEventListener('DOMContentLoaded', () => {
+  Object.keys(slides).forEach(id => renderSlide(id));
+  document.getElementById('main-textura').src = texturaFabrics['boucle'].img;
+  document.getElementById('thumb-textura').src = texturaApoio;
+  document.getElementById('prompt-textura').textContent = texturaFabrics['boucle'].prompt;
+});
 </script>
 </body>
 </html>
