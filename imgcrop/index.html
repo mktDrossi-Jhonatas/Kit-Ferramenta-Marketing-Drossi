@@ -590,7 +590,7 @@
     Voltar ao hub
   </a>
   <h1><span>IMG</span>CROP</h1>
-  <p class="subtitle">1000×1000 px &nbsp;·&nbsp; máx 340 KB &nbsp;·&nbsp; JPEG</p>
+  <p class="subtitle">até 2400×2400 px (sem upscale) &nbsp;·&nbsp; máx 1 MB &nbsp;·&nbsp; JPEG</p>
 
   <!-- Tab Toggle -->
   <div class="mode-toggle">
@@ -762,8 +762,8 @@
 <canvas id="hidden-canvas"></canvas>
 
 <script>
-  const TARGET = 1000;
-  const MAX_BYTES = 340 * 1024;
+  const TARGET = 2400; // espaço "virtual" usado pelo editor (zoom, grid, posição) — também o teto de exportação
+  const MAX_BYTES = 1000 * 1024;
   const PREV = 440;
   const R = PREV / TARGET;
 
@@ -802,14 +802,21 @@
     return new Promise(resolve => {
       const img = new Image();
       img.onload = async () => {
+        // Exporta na resolução nativa da imagem (até o teto TARGET) — nunca faz
+        // upscale além do que a foto original já tem. A matemática de edição
+        // (ox/oy/scale) continua no espaço virtual TARGET, então escalamos
+        // tudo proporcionalmente (factor) para o canvas de saída real.
+        const nativeMax = Math.max(img.naturalWidth, img.naturalHeight);
+        const OUT = Math.min(TARGET, nativeMax);
+        const factor = OUT / TARGET;
         const canvas = document.getElementById('hidden-canvas');
-        canvas.width = TARGET; canvas.height = TARGET;
+        canvas.width = OUT; canvas.height = OUT;
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, TARGET, TARGET);
-        const w = img.naturalWidth * scale;
-        const h = img.naturalHeight * scale;
-        ctx.drawImage(img, (TARGET - w) / 2 + ox, (TARGET - h) / 2 + oy, w, h);
+        ctx.fillRect(0, 0, OUT, OUT);
+        const w = img.naturalWidth * scale * factor;
+        const h = img.naturalHeight * scale * factor;
+        ctx.drawImage(img, (OUT - w) / 2 + ox * factor, (OUT - h) / 2 + oy * factor, w, h);
 
         // Binary search: find highest quality that fits MAX_BYTES
         const toBlob = (q) => new Promise(res => canvas.toBlob(res, 'image/jpeg', q));

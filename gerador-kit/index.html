@@ -766,7 +766,7 @@
     Voltar ao hub
   </a>
   <h1>Kit Generator</h1>
-  <p class="subtitle">Crie kits de produto — saída 1000×1000px, máx 340 KB</p>
+  <p class="subtitle">Crie kits de produto — saída até 2400×2400px (sem upscale), máx 1 MB</p>
 
   <div class="mode-toggle">
     <button class="mode-btn active" id="btn-mode-simple" onclick="setMode('simple')">
@@ -791,6 +791,25 @@
       <div id="preview-wrap">
         <img id="preview-img" src="" alt="Preview">
         <button class="clear-btn" onclick="clearSimpleImage()">×</button>
+      </div>
+
+      <!-- Variation section — only shown after the product image is uploaded -->
+      <div class="variation-section" id="simple-variation-section">
+        <label class="enable-variation-row" onclick="toggleSimpleVariationSection()">
+          <label class="toggle-switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="simple-variation-toggle" onchange="toggleSimpleVariationSection()">
+            <span class="toggle-track"></span>
+          </label>
+          <div class="enable-variation-label">
+            <strong>🎨 Habilitar Variações</strong>
+            <span>Gere os mesmos kits em outras cores ou versões</span>
+          </div>
+        </label>
+
+        <div class="variations-container" id="simple-variations-container">
+          <div id="simple-var-groups-list"></div>
+          <button class="add-variation-btn" onclick="addSimpleVariationGroup()">+ Adicionar variação</button>
+        </div>
       </div>
     </div>
 
@@ -924,6 +943,11 @@
   let selectedKits = new Set();
   let generatedFiles = []; // all files for "download all"
 
+  // Simple mode variations: [{id, name, image:{src,img}|null}, ...]
+  let simpleVarGroups = [];
+  let simpleVarIdCounter = 0;
+  let simpleVariationsEnabled = false;
+
   // Advanced mode
   let advImages = [];     // root images: [{src, img, name?}, ...]
   let advKitNum = null;
@@ -975,6 +999,7 @@
         document.getElementById('preview-img').src = ev.target.result;
         document.getElementById('preview-wrap').style.display = 'block';
         uploadArea.style.display = 'none';
+        document.getElementById('simple-variation-section').classList.add('visible');
         updateSimpleButtons();
       };
       img.src = ev.target.result;
@@ -988,7 +1013,107 @@
     uploadArea.style.display = 'block';
     document.getElementById('preview-img').src = '';
     fileInput.value = '';
+    document.getElementById('simple-variation-section').classList.remove('visible');
     updateSimpleButtons();
+  }
+
+  // ── SIMPLE MODE VARIATIONS ──
+  function toggleSimpleVariationSection() {
+    const chk = document.getElementById('simple-variation-toggle');
+    simpleVariationsEnabled = chk.checked;
+    const container = document.getElementById('simple-variations-container');
+    container.classList.toggle('open', simpleVariationsEnabled);
+    if (simpleVariationsEnabled && simpleVarGroups.length === 0) addSimpleVariationGroup();
+    updateSimpleButtons();
+  }
+
+  function addSimpleVariationGroup() {
+    const id = ++simpleVarIdCounter;
+    simpleVarGroups.push({ id, name: `Variação ${id}`, image: null });
+    renderSimpleVarGroupsList();
+    updateSimpleButtons();
+  }
+
+  function removeSimpleVariationGroup(id) {
+    simpleVarGroups = simpleVarGroups.filter(v => v.id !== id);
+    renderSimpleVarGroupsList();
+    updateSimpleButtons();
+  }
+
+  function renderSimpleVarGroupsList() {
+    const list = document.getElementById('simple-var-groups-list');
+    list.innerHTML = '';
+    simpleVarGroups.forEach(vg => list.appendChild(buildSimpleVarGroupElement(vg)));
+  }
+
+  function buildSimpleVarGroupElement(vg) {
+    const div = document.createElement('div');
+    div.className = 'var-group';
+    div.id = `svg-${vg.id}`;
+
+    const header = document.createElement('div');
+    header.className = 'var-group-header';
+    header.innerHTML = `
+      <div class="var-group-num">${simpleVarGroups.indexOf(vg) + 1}</div>
+      <input class="var-name-input" value="${vg.name}" placeholder="Nome da variação (ex: Cinza)"
+        onchange="simpleVarGroups.find(v=>v.id===${vg.id}).name=this.value"
+        oninput="simpleVarGroups.find(v=>v.id===${vg.id}).name=this.value">
+      <button class="var-group-remove" onclick="removeSimpleVariationGroup(${vg.id})" title="Remover">✕</button>
+    `;
+
+    const body = document.createElement('div');
+    body.className = 'var-group-body';
+
+    const hint = document.createElement('p');
+    hint.className = 'var-hint';
+    if (vg.image) { hint.textContent = '✓ Imagem enviada.'; hint.style.color = '#5a8a5a'; }
+    else { hint.textContent = 'Envie a imagem desta variação.'; }
+    body.appendChild(hint);
+
+    const gallery = document.createElement('div');
+    gallery.className = 'var-gallery';
+
+    if (vg.image) {
+      const imgDiv = document.createElement('div');
+      imgDiv.className = 'var-img-item';
+      imgDiv.innerHTML = `
+        <img src="${vg.image.src}" alt="">
+        <button class="var-img-remove" onclick="removeSimpleVarImage(${vg.id})">×</button>
+      `;
+      gallery.appendChild(imgDiv);
+    } else {
+      const uploadBtn = document.createElement('div');
+      uploadBtn.className = 'var-upload-btn';
+      uploadBtn.innerHTML = `
+        <input type="file" accept="image/*" onchange="if(this.files[0]) loadSimpleVarImage(this.files[0],${vg.id})">
+        <div class="add-icon">+</div>
+        <div class="add-text">Adicionar<br>imagem</div>
+      `;
+      gallery.appendChild(uploadBtn);
+    }
+
+    body.appendChild(gallery);
+    div.appendChild(header);
+    div.appendChild(body);
+    return div;
+  }
+
+  function loadSimpleVarImage(file, varId) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const vg = simpleVarGroups.find(v => v.id === varId);
+        if (vg) { vg.image = { src: ev.target.result, img }; renderSimpleVarGroupsList(); updateSimpleButtons(); }
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeSimpleVarImage(varId) {
+    const vg = simpleVarGroups.find(v => v.id === varId);
+    if (vg) { vg.image = null; renderSimpleVarGroupsList(); updateSimpleButtons(); }
   }
 
   function toggleKit(btn) {
@@ -1004,7 +1129,11 @@
   }
 
   function updateSimpleButtons() {
-    document.getElementById('btn-generate').disabled = !(srcImage && selectedKits.size > 0);
+    let varsOk = true;
+    if (simpleVariationsEnabled) {
+      varsOk = simpleVarGroups.length > 0 && simpleVarGroups.every(vg => vg.image);
+    }
+    document.getElementById('btn-generate').disabled = !(srcImage && selectedKits.size > 0 && varsOk);
     document.getElementById('btn-all').disabled = !srcImage;
   }
 
@@ -1018,31 +1147,71 @@
     const ma = document.getElementById('results-master-actions');
 
     pw.style.display = 'block'; rs.style.display = 'none';
-    rc.innerHTML = ''; ma.innerHTML = ''; generatedFiles = [];
+    rc.innerHTML = ''; ma.innerHTML = ''; generatedFiles = []; kitResults = [];
 
-    const simpleGrid = document.createElement('div');
-    simpleGrid.className = 'results-grid';
-    rc.appendChild(simpleGrid);
+    const hasVariations = simpleVariationsEnabled && simpleVarGroups.length > 0;
 
-    const results = [];
-    for (let i = 0; i < kits.length; i++) {
-      const kitRaw = kits[i];
-      // '2v' = kit 2 layout vertical
-      const kitNum = kitRaw === '2v' ? '2' : kitRaw === '2d' ? '2' : kitRaw;
-      const layoutVariant = kitRaw === '2v' ? 'vertical' : kitRaw === '2d' ? 'diagonal' : 'horizontal';
-      pl.textContent = `Gerando Kit ${kitRaw}...`;
-      pf.style.width = `${(i / kits.length) * 100}%`;
-      await tick();
-      const blob = await renderKit(kitNum, null, layoutVariant);
-      const url = URL.createObjectURL(blob);
-      results.push({ kit: kitRaw, blob, url });
-      generatedFiles.push({ url, filename: `kit_${kitRaw}.jpg` });
+    if (!hasVariations) {
+      const simpleGrid = document.createElement('div');
+      simpleGrid.className = 'results-grid';
+      rc.appendChild(simpleGrid);
+
+      const results = [];
+      for (let i = 0; i < kits.length; i++) {
+        const kitRaw = kits[i];
+        // '2v' = kit 2 layout vertical
+        const kitNum = kitRaw === '2v' ? '2' : kitRaw === '2d' ? '2' : kitRaw;
+        const layoutVariant = kitRaw === '2v' ? 'vertical' : kitRaw === '2d' ? 'diagonal' : 'horizontal';
+        pl.textContent = `Gerando Kit ${kitRaw}...`;
+        pf.style.width = `${(i / kits.length) * 100}%`;
+        await tick();
+        const blob = await renderKit(kitNum, null, layoutVariant);
+        const url = URL.createObjectURL(blob);
+        results.push({ kit: kitRaw, blob, url });
+        generatedFiles.push({ url, filename: `kit_${kitRaw}.jpg` });
+      }
+
+      pf.style.width = '100%'; pl.textContent = 'Concluído!';
+      showSimpleResults(results, simpleGrid);
+
+      ma.innerHTML = `<button class="btn btn-primary" style="flex:1;font-size:1rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits</button>`;
+    } else {
+      // Same variation logic as the advanced mode: render every selected kit
+      // once per variant (Principal + each variation image), grouped with tabs.
+      const allVariants = [
+        { name: 'Principal', img: srcImage },
+        ...simpleVarGroups.map(vg => ({ name: vg.name, img: vg.image.img }))
+      ];
+      const totalJobs = kits.length * allVariants.length;
+      let jobDone = 0;
+      const originalSrc = srcImage;
+
+      for (const kitRaw of kits) {
+        const kitNum = kitRaw === '2v' ? '2' : kitRaw === '2d' ? '2' : kitRaw;
+        const layoutVariant = kitRaw === '2v' ? 'vertical' : kitRaw === '2d' ? 'diagonal' : 'horizontal';
+        const kitResult = { kitNum: kitRaw, variants: [] };
+
+        for (const variant of allVariants) {
+          pl.textContent = `Gerando Kit ${kitRaw} — ${variant.name}...`;
+          pf.style.width = `${(jobDone / totalJobs) * 90}%`;
+          await tick();
+          srcImage = variant.img;
+          const blob = await renderKit(kitNum, null, layoutVariant);
+          srcImage = originalSrc;
+          const url = URL.createObjectURL(blob);
+          const filename = `kit_${kitRaw}_${sanitizeFilename(variant.name)}.jpg`;
+          kitResult.variants.push({ varName: variant.name, url, blob, filename });
+          generatedFiles.push({ url, filename });
+          jobDone++;
+        }
+
+        kitResults.push(kitResult);
+        rc.appendChild(buildKitResultBlock(kitResult, ''));
+      }
+
+      pf.style.width = '100%'; pl.textContent = 'Concluído!';
+      ma.innerHTML = `<button class="btn btn-primary" style="flex:1;font-size:0.95rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits e variações</button>`;
     }
-
-    pf.style.width = '100%'; pl.textContent = 'Concluído!';
-    showSimpleResults(results, simpleGrid);
-
-    ma.innerHTML = `<button class="btn btn-primary" style="flex:1;font-size:1rem;padding:14px;" onclick="downloadAll()">⬇ Baixar todos os kits</button>`;
 
     rs.style.display = 'block';
     rs.scrollIntoView({ behavior: 'smooth' });
@@ -1497,7 +1666,7 @@
     pf.style.width = '100%'; pl.textContent = 'Concluído!';
 
     // Render results
-    const block = buildKitResultBlock(kitResult);
+    const block = buildKitResultBlock(kitResult, 'avançado');
     rc.appendChild(block);
 
     // Master actions
@@ -1516,7 +1685,7 @@
     setTimeout(() => { pw.style.display = 'none'; }, 800);
   }
 
-  function buildKitResultBlock(kitResult) {
+  function buildKitResultBlock(kitResult, titleSuffix = 'avançado') {
     const block = document.createElement('div');
     block.className = 'result-kit-block';
 
@@ -1529,7 +1698,7 @@
 
     const title = document.createElement('span');
     title.className = 'result-kit-title';
-    title.textContent = `Kit ${kitResult.kitNum} avançado`;
+    title.textContent = `Kit ${kitResult.kitNum}${titleSuffix ? ' ' + titleSuffix : ''}`;
     header.appendChild(title);
 
     if (hasVariants) {
@@ -1674,9 +1843,15 @@
     return maxFit * FILL_FACTOR;
   }
 
+  const MAX_OUT = 2400; // teto de segurança — nunca faz upscale além da resolução original
+
   // layoutVariant: 'horizontal' | 'vertical' (only used for kit 2)
   async function renderKit(kitNum, images, layoutVariant) {
-    const OUT = 1000;
+    // OUT nunca ultrapassa a maior resolução nativa entre as imagens usadas — evita
+    // esticar uma foto de baixa resolução (ex: 1000x1000) até o teto de 2400px.
+    const imgList = (images ? images.filter(Boolean) : [srcImage]).filter(Boolean);
+    const maxNative = imgList.length ? Math.max(...imgList.map(im => Math.max(im.naturalWidth, im.naturalHeight))) : MAX_OUT;
+    const OUT = Math.min(MAX_OUT, maxNative);
     const canvas = document.getElementById('canvas');
     canvas.width = OUT; canvas.height = OUT;
     const ctx = canvas.getContext('2d');
@@ -1687,7 +1862,7 @@
 
     // ── KIT 3: 2 poltronas em cima, 1 sofá embaixo (centralizado, maior) ──
     if (kitNum === '3') {
-      const pad = 30, gap = 14;
+      const pad = Math.round(OUT * 0.03), gap = Math.round(OUT * 0.014);
       const topH  = Math.round(OUT * 0.47);
       const botH  = OUT - pad * 2 - topH - gap;
       const halfW = (OUT - pad * 2 - gap) / 2;
@@ -1705,12 +1880,12 @@
       drawImgScaled(ctx, imgs[1], pad + halfW + gap,  pad, halfW, topH, gs, crops[1]);
       // Bottom item has full width available
       drawImgScaled(ctx, imgs[2], pad, pad + topH + gap, OUT - pad * 2, botH, gs, crops[2]);
-      return compressToTarget(canvas, 340 * 1024);
+      return compressToTarget(canvas, 1000 * 1024);
     }
 
     // ── KIT 2: lado a lado OU vertical ──
     if (kitNum === '2') {
-      const pad = 50, gap = 20;
+      const pad = Math.round(OUT * 0.05), gap = Math.round(OUT * 0.02);
       const imgs  = [img(0), img(1)];
       const crops = imgs.map(im => getCropBox(im));
 
@@ -1743,12 +1918,12 @@
         drawImgScaled(ctx, imgs[0], pad,               pad, cellW, cellH, gs, crops[0]);
         drawImgScaled(ctx, imgs[1], pad + cellW + gap,  pad, cellW, cellH, gs, crops[1]);
       }
-      return compressToTarget(canvas, 340 * 1024);
+      return compressToTarget(canvas, 1000 * 1024);
     }
 
     // ── GRID KITS: 4, 6, 8 ──
     {
-      const pad = 30, gap = 10;
+      const pad = Math.round(OUT * 0.03), gap = Math.round(OUT * 0.01);
       const [cols, rows] = kitLayouts[kitNum];
       const cellW = (OUT - pad * 2 - gap * (cols - 1)) / cols;
       const cellH = (OUT - pad * 2 - gap * (rows - 1)) / rows;
@@ -1764,7 +1939,7 @@
           pad + col * (cellW + gap), pad + row * (cellH + gap),
           cellW, cellH, gs, crops[i]);
       }
-      return compressToTarget(canvas, 340 * 1024);
+      return compressToTarget(canvas, 1000 * 1024);
     }
   }
 
