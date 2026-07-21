@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <script src="../theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhotoScan</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>📷</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0eb;
+      --surface: #fff;
+      --accent: #8b6f47;
+      --accent2: #c4a882;
+      --text: #2c2417;
+      --muted: #9b8e82;
+      --border: #e8ddd4;
+      --shadow: rgba(139,111,71,0.12);
+      --success: #4a7c59;
+      --success-bg: #eef6f1;
+    }
+    :root[data-theme="dark"] {
+      --bg: #1c1712; --surface: #262019; --accent: #d9b26e; --accent2: #a9855a;
+      --text: #f0e9df; --muted: #a89a89; --border: #3a3226; --shadow: rgba(0,0,0,0.35);
+      --success-bg: #1e2f24;
+    }
+    body { transition: background-color .25s ease, color .25s ease; }
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+    .theme-toggle:hover { border-color: var(--accent2); color: var(--accent); transform: translateY(-1px) rotate(15deg); }
+    .theme-toggle svg { display: block; }
+    .theme-toggle .i-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-moon { display: block; }
+    :root[data-theme="dark"] .btn-reset:hover, :root[data-theme="dark"] .back-link:hover { background: #33291c; }
+    :root[data-theme="dark"] .not-supported { background: #3a201f; border-color: #5a2f2c; color: #e88a7a; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 48px 20px 64px;
+    }
+
+    .max-w { max-width: 680px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .header { text-align: center; margin-bottom: 40px; }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 24px var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title .icon {
+      width: 32px; height: 32px;
+      background: #fdf5eb;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+
+    /* ── UPLOAD / DROP AREA ── */
+    .pick-area {
+      border: 2px dashed var(--accent2);
+      border-radius: 14px;
+      padding: 52px 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fdf9f5;
+    }
+    .pick-area:hover {
+      background: #f5ede2;
+      border-color: var(--accent);
+    }
+
+    .pick-icon {
+      font-size: 2.8rem;
+      margin-bottom: 14px;
+      display: block;
+      line-height: 1;
+    }
+
+    .pick-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .pick-sub {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .pick-sub strong { color: var(--accent); font-weight: 500; }
+
+    .btn-pick {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 28px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+    .btn-pick:hover { background: #7a5e38; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(139,111,71,0.25); }
+    .btn-pick:active { transform: translateY(0); }
+
+    /* ── PRIVACY NOTE ── */
+    .privacy-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 20px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .privacy-note .lock { font-size: 0.85rem; }
+
+    /* ── LOADING ── */
+    #loading-section {
+      display: none;
+      text-align: center;
+      padding: 48px 0;
+    }
+
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .loading-count {
+      color: var(--muted);
+      font-size: 0.85rem;
+      transition: opacity 0.2s;
+    }
+
+    /* ── RESULTS ── */
+    #result-section { display: none; }
+
+    /* folder path banner */
+    .path-banner {
+      background: #fdf5eb;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .path-banner .folder-icon { font-size: 1.4rem; line-height: 1; margin-top: 1px; }
+    .path-banner-info {}
+    .path-banner-label {
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .path-banner-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .path-banner-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .path-network-badge {
+      display: inline-block;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 0.68rem;
+      padding: 2px 7px;
+      border-radius: 99px;
+      margin-left: 6px;
+      vertical-align: middle;
+      font-weight: 500;
+    }
+
+    /* stat grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .stat-tile {
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px 14px 14px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .stat-tile:hover { border-color: var(--accent2); }
+
+    .stat-tile-label {
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .stat-tile-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-tile-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* section label */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* format rows */
+    .fmt-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+    }
+    .fmt-row:last-child { border-bottom: none; }
+
+    .fmt-tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: #fdf5eb;
+      color: var(--accent);
+      border: 1px solid var(--accent2);
+      min-width: 56px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .fmt-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .fmt-bar-fill {
+      height: 100%;
+      background: var(--accent2);
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    .fmt-count {
+      font-size: 0.82rem;
+      color: var(--text);
+      font-weight: 500;
+      min-width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .fmt-pct {
+      font-size: 0.75rem;
+      color: var(--muted);
+      min-width: 34px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* subfolder rows */
+    .sub-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .sub-row:last-child { border-bottom: none; }
+
+    .sub-name {
+      flex: 1;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sub-count {
+      font-weight: 500;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    /* reset button */
+    .btn-reset {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 28px auto 0;
+      padding: 11px 24px;
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent2);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { background: #fdf5eb; border-color: var(--accent); }
+
+    /* not supported */
+    .not-supported {
+      background: #fff5f5;
+      border: 1px solid #f5c0c0;
+      color: #a33;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 16px;
+      display: none;
+    }
+
+    /* zero state */
+    .zero-state {
+      text-align: center;
+      padding: 32px 0 8px;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    .zero-state .big { font-size: 2rem; margin-bottom: 10px; }
+
+    /* footer */
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; font-weight: 500; color: var(--muted);
+      text-decoration: none; padding: 7px 13px;
+      border: 1px solid var(--border); border-radius: 20px;
+      background: var(--surface); margin-bottom: 20px;
+      transition: all 0.15s;
+    }
+    .back-link:hover { color: var(--accent); border-color: var(--accent2); background: #fdf5eb; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+  <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+<script>document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });</script>
+<div class="max-w">
+
+  <a class="back-link" href="../index.html">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Voltar ao hub
+  </a>
+
+  <div class="header">
+    <h1>Photo<span>Scan</span></h1>
+    <p class="subtitle">Conta todas as fotos de uma pasta e suas subpastas — direto no navegador.</p>
+  </div>
+
+  <!-- SCAN SECTION -->
+  <div id="scan-section">
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">📂</span>
+        Selecionar pasta
+      </div>
+
+      <div class="pick-area" onclick="pickFolder()">
+        <span class="pick-icon">🗂️</span>
+        <p class="pick-title">Escolha uma pasta para escanear</p>
+        <p class="pick-sub">
+          Todas as subpastas serão verificadas automaticamente.<br>
+          Formatos reconhecidos: <strong>JPG, PNG, HEIC, RAW, WEBP</strong> e mais.
+        </p>
+        <button class="btn-pick" onclick="event.stopPropagation(); pickFolder()">
+          Selecionar pasta
+        </button>
+      </div>
+
+      <div class="privacy-note">
+        <span class="lock">🔒</span>
+        <span>Seus arquivos <strong>não saem do computador</strong>. Tudo é processado localmente pelo navegador.</span>
+      </div>
+
+      <div class="not-supported" id="not-supported-msg">
+        ⚠️ Seu navegador não suporta seleção de pasta. Use <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> para usar este recurso.
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading-section">
+    <div class="card" style="text-align:center; padding: 48px 32px;">
+      <div class="spinner"></div>
+      <p class="loading-label">Escaneando pasta...</p>
+      <p class="loading-count" id="loading-count">Aguarde um momento</p>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="result-section">
+
+    <!-- path banner -->
+    <div class="path-banner">
+      <span class="folder-icon">📁</span>
+      <div class="path-banner-info">
+        <div class="path-banner-label">Pasta escaneada</div>
+        <div class="path-banner-name" id="res-folder-name">—</div>
+        <div class="path-banner-note" id="res-folder-note"></div>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-tile-label">📸 Fotos</div>
+        <div class="stat-tile-num" id="res-total">0</div>
+        <div class="stat-tile-sub">encontradas</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-label">📂 Subpastas</div>
+        <div class="stat-tile-num" id="res-folders">0</div>
+        <div class="stat-tile-sub">verificadas</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-tile-label">🏷️ Formatos</div>
+        <div class="stat-tile-num" id="res-exts">0</div>
+        <div class="stat-tile-sub">diferentes</div>
+      </div>
+    </div>
+
+    <!-- formats -->
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🏷️</span>
+        Por formato
+      </div>
+      <div id="fmt-list"></div>
+    </div>
+
+    <!-- subfolders -->
+    <div class="card" id="sub-card" style="display:none">
+      <div class="card-title">
+        <span class="icon">📂</span>
+        Por subpasta <span style="font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--muted); font-weight:400; margin-left:6px;">(top 10)</span>
+      </div>
+      <div id="sub-list"></div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="btn-reset" onclick="reset()">
+        ↩ Escanear outra pasta
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">
+    PhotoScan · tudo processado localmente · nenhum dado enviado
+  </div>
+
+</div>
+
+<script>
+  const IMAGE_EXTS = new Set([
+    'jpg','jpeg','jfif','jpe',
+    'png','gif','bmp','webp',
+    'tiff','tif',
+    'heic','heif',
+    'raw','cr2','cr3','nef','nrw','arw','srf','sr2',
+    'orf','rw2','dng','raf','pef','ptx','rwl','mrw',
+    'svg','ico','avif','avifs',
+    'psd','psb'
+  ]);
+
+  // Detecta padrão de IP na string (IPv4 simples)
+  function maskNetworkIP(name) {
+    // se o nome em si parece um IP ou contém IP
+    const ipPattern = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/g;
+    return name.replace(ipPattern, '*.*.*.* ');
+  }
+
+  // Tenta detectar se o nome da pasta sugere uma rede
+  function isNetworkPath(name) {
+    // nomes que começam com \\ ou // ou padrão UNC
+    return /^(\\\\|\/\/)/.test(name) || /(\d{1,3}\.){3}\d{1,3}/.test(name);
+  }
+
+  async function pickFolder() {
+    if (!window.showDirectoryPicker) {
+      document.getElementById('not-supported-msg').style.display = 'block';
+      return;
+    }
+
+    let dirHandle;
+    try {
+      dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    } catch (e) {
+      // usuário cancelou
+      return;
+    }
+
+    document.getElementById('scan-section').style.display = 'none';
+    document.getElementById('loading-section').style.display = 'block';
+    document.getElementById('result-section').style.display = 'none';
+
+    const results = {
+      total: 0,
+      folders: 0,
+      exts: {},
+      subfolders: {}
+    };
+
+    async function walk(handle, depth, topFolder) {
+      for await (const [name, entry] of handle.entries()) {
+        if (entry.kind === 'directory') {
+          results.folders++;
+          // define o top-folder para agrupamento
+          const tf = depth === 0 ? name : topFolder;
+          await walk(entry, depth + 1, tf);
+        } else {
+          const dotIdx = name.lastIndexOf('.');
+          if (dotIdx < 0) continue;
+          const ext = name.slice(dotIdx + 1).toLowerCase();
+          if (IMAGE_EXTS.has(ext)) {
+            results.total++;
+            results.exts[ext] = (results.exts[ext] || 0) + 1;
+            if (topFolder) {
+              results.subfolders[topFolder] = (results.subfolders[topFolder] || 0) + 1;
+            }
+            if (results.total % 100 === 0) {
+              document.getElementById('loading-count').textContent =
+                results.total.toLocaleString('pt-BR') + ' fotos encontradas…';
+            }
+          }
+        }
+      }
+    }
+
+    try {
+      await walk(dirHandle, 0, null);
+    } catch (e) {
+      console.error(e);
+    }
+
+    document.getElementById('loading-section').style.display = 'none';
+    showResults(dirHandle.name, results);
+  }
+
+  function showResults(rawName, r) {
+    // --- path banner ---
+    const net = isNetworkPath(rawName);
+    let displayName = net ? maskNetworkIP(rawName) : rawName;
+
+    document.getElementById('res-folder-name').innerHTML =
+      displayName + (net ? '<span class="path-network-badge">Rede</span>' : '');
+
+    // O browser não expõe o caminho completo por segurança
+    document.getElementById('res-folder-note').textContent =
+      net
+        ? 'Pasta de rede detectada — endereço IP ocultado por privacidade.'
+        : 'O navegador não expõe o caminho completo por segurança — apenas o nome da pasta.';
+
+    // --- stats ---
+    document.getElementById('res-total').textContent   = r.total.toLocaleString('pt-BR');
+    document.getElementById('res-folders').textContent = r.folders.toLocaleString('pt-BR');
+
+    const extEntries = Object.entries(r.exts).sort((a, b) => b[1] - a[1]);
+    document.getElementById('res-exts').textContent = extEntries.length;
+
+    // --- formats ---
+    const fmtList = document.getElementById('fmt-list');
+    fmtList.innerHTML = '';
+
+    if (extEntries.length === 0) {
+      fmtList.innerHTML = '<div class="zero-state"><div class="big">🔍</div>Nenhuma foto encontrada nesta pasta.</div>';
+    } else {
+      const maxCount = extEntries[0][1];
+      extEntries.forEach(([ext, count]) => {
+        const pct   = r.total > 0 ? Math.round((count / r.total) * 100) : 0;
+        const barW  = Math.round((count / maxCount) * 100);
+        const row   = document.createElement('div');
+        row.className = 'fmt-row';
+        row.innerHTML = `
+          <span class="fmt-tag">.${ext.toUpperCase()}</span>
+          <div class="fmt-bar-track">
+            <div class="fmt-bar-fill" style="width:${barW}%"></div>
+          </div>
+          <span class="fmt-count">${count.toLocaleString('pt-BR')}</span>
+          <span class="fmt-pct">${pct}%</span>
+        `;
+        fmtList.appendChild(row);
+      });
+    }
+
+    // --- subfolders ---
+    const subEntries = Object.entries(r.subfolders)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    const subCard = document.getElementById('sub-card');
+    const subList = document.getElementById('sub-list');
+    subList.innerHTML = '';
+
+    if (subEntries.length > 0) {
+      subCard.style.display = 'block';
+      subEntries.forEach(([folder, count]) => {
+        const row = document.createElement('div');
+        row.className = 'sub-row';
+        row.innerHTML = `
+          <span style="font-size:1rem">📁</span>
+          <span class="sub-name">${folder}</span>
+          <span class="sub-count">${count.toLocaleString('pt-BR')} foto${count !== 1 ? 's' : ''}</span>
+        `;
+        subList.appendChild(row);
+      });
+    } else {
+      subCard.style.display = 'none';
+    }
+
+    document.getElementById('result-section').style.display = 'block';
+  }
+
+  function reset() {
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('scan-section').style.display = 'block';
+    document.getElementById('loading-count').textContent = 'Aguarde um momento';
+  }
+</script>
+</body>
+</html>

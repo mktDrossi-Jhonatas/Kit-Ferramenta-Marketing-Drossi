@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script src="../theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escolha Sua Cor — Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0eb;
+  --surface: #fff;
+  --accent: #8b6f47;
+  --accent2: #c4a882;
+  --amber: #C8973A;
+  --text: #2c2417;
+  --muted: #9b8e82;
+  --border: #e8ddd4;
+  --shadow: rgba(139,111,71,0.13);
+  --danger: #c0392b;
+}
+:root[data-theme="dark"] {
+  --bg: #1c1712; --surface: #262019; --accent: #d9b26e; --accent2: #a9855a;
+  --text: #f0e9df; --muted: #a89a89; --border: #3a3226; --shadow: rgba(0,0,0,0.35);
+}
+body { transition: background-color .25s ease, color .25s ease; }
+.theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+.theme-toggle:hover { border-color: var(--accent2); color: var(--accent); transform: translateY(-1px) rotate(15deg); }
+.theme-toggle svg { display: block; }
+.theme-toggle .i-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .i-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .i-moon { display: block; }
+:root[data-theme="dark"] .upload-zone:hover, :root[data-theme="dark"] .mini-upload:hover,
+:root[data-theme="dark"] .add-color-btn:hover, :root[data-theme="dark"] .btn-outline:hover,
+:root[data-theme="dark"] .back-link:hover { background: #33291c; }
+:root[data-theme="dark"] .color-remove:hover { background: #3a201f; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 28px 14px 60px;
+}
+.wrap { max-width: 1200px; margin: 0 auto; }
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.85rem;
+  text-align: center;
+  margin-bottom: 5px;
+  letter-spacing: -0.02em;
+}
+.subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 22px; }
+
+/* ── 2-COLUMN LAYOUT ── */
+.layout { display: flex; flex-direction: column; gap: 0; }
+
+@media (min-width: 900px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 440px;
+    gap: 24px;
+    align-items: start;
+  }
+  .controls-col { order: 1; min-width: 0; }
+  .preview-col  { order: 2; position: sticky; top: 14px; }
+}
+
+/* ── MOBILE STICKY PREVIEW ── */
+@media (max-width: 899px) {
+  .preview-col {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    margin: 0 -14px 18px;
+    padding: 8px 14px 0;
+    background: linear-gradient(180deg, rgba(245,240,235,0.97) 0%, rgba(245,240,235,0.94) 92%, rgba(245,240,235,0) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .preview-col .card { margin-bottom: 8px; padding: 14px; border-radius: 14px; }
+  .preview-stage { max-width: 340px; margin: 0 auto; }
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 4px 28px var(--shadow);
+  margin-bottom: 18px;
+}
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.step-num {
+  background: var(--accent); color: #fff;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-family: 'DM Sans', sans-serif; font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* ── PREVIEW STAGE ── */
+.preview-stage {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+#preview-canvas {
+  width: 100%; aspect-ratio: 1;
+  display: block; border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #d9d2c9;
+  cursor: default;
+  transition: box-shadow 0.2s;
+}
+#preview-canvas.menu-hover { cursor: grab; }
+#preview-canvas.menu-grabbing { cursor: grabbing; }
+
+.pos-badge {
+  position: absolute;
+  top: 10px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(44, 36, 23, 0.92);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 14px;
+  font-size: 0.74rem;
+  font-family: 'DM Sans', monospace;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  display: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+.pos-badge.visible { display: block; animation: pop 0.18s ease-out; }
+@keyframes pop {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.preview-drag-hint {
+  position: absolute;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(44, 36, 23, 0.85);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 18px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.preview-drag-hint.show { opacity: 1; }
+
+/* ── POSITION PRESETS ── */
+.preset-section {
+  margin-top: 12px;
+  padding: 10px;
+  background: #fdf9f5;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+}
+.preset-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.preset-row strong {
+  font-size: 0.72rem; color: var(--muted);
+  font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.preset-btn {
+  aspect-ratio: 1;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--muted);
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fdf5eb;
+  transform: scale(1.04);
+}
+.preset-btn.active {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+}
+
+.preview-tip {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── UPLOAD ZONES ── */
+.upload-zone {
+  border: 2px dashed var(--accent2);
+  border-radius: 13px;
+  padding: 26px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fdf9f5;
+  position: relative;
+}
+.upload-zone:hover { background: #f5ede2; border-color: var(--accent); }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.uz-icon { font-size: 1.9rem; margin-bottom: 7px; }
+.uz-text { color: var(--muted); font-size: 0.84rem; line-height: 1.5; }
+.uz-text strong { color: var(--accent); }
+
+/* ── BG PREVIEW ── */
+.bg-preview { margin-top: 14px; display: none; position: relative; }
+.bg-preview img {
+  width: 100%; max-height: 200px;
+  object-fit: cover; border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.preview-clear {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(0,0,0,0.55); border: none; color: #fff;
+  width: 26px; height: 26px; border-radius: 50%;
+  cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── FORM CONTROLS ── */
+.field { display: block; margin-bottom: 14px; }
+.field > span {
+  display: block; font-size: 0.76rem; font-weight: 500;
+  color: var(--muted); margin-bottom: 5px; letter-spacing: 0.01em;
+}
+input[type=text] {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid var(--border); border-radius: 9px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  color: var(--text); background: var(--surface);
+  transition: border-color 0.2s;
+}
+input[type=text]:focus { outline: none; border-color: var(--accent); }
+
+.color-picker-row { display: flex; gap: 12px; }
+.color-field { flex: 1; }
+.color-swatch {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--border); border-radius: 9px;
+  padding: 7px 10px; cursor: pointer;
+  background: var(--surface); transition: border-color 0.2s;
+}
+.color-swatch:hover { border-color: var(--accent2); }
+.swatch-box {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0;
+}
+.swatch-val { font-size: 0.8rem; color: var(--muted); font-family: monospace; }
+input[type=color] { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+
+.range-group { display: flex; align-items: center; gap: 10px; }
+input[type=range] { flex: 1; accent-color: var(--accent); height: 4px; cursor: pointer; }
+.range-val { min-width: 48px; font-size: 0.78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── COLLAPSIBLE ── */
+.advanced-toggle {
+  font-size: 0.78rem; color: var(--accent);
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 0; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: opacity 0.2s;
+}
+.advanced-toggle:hover { opacity: 0.7; }
+.advanced-toggle .arr { transition: transform 0.2s; display: inline-block; }
+.advanced-toggle.open .arr { transform: rotate(90deg); }
+.advanced-body { display: none; padding-top: 12px; }
+.advanced-body.open { display: block; }
+
+/* ── COLOR CARDS ── */
+.color-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
+.color-card {
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fdfaf7;
+  transition: border-color 0.2s;
+}
+.color-card.is-root { border-color: var(--accent2); }
+.color-card-header {
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  background: #fdf9f5;
+  border-bottom: 1px solid var(--border);
+}
+.color-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent2); color: #fff;
+  font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.color-label-input {
+  flex: 1; border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+  font-weight: 500; color: var(--text);
+  min-width: 0;
+}
+.color-label-input:focus { outline: none; border-bottom: 1px solid var(--accent2); }
+.root-badge {
+  font-size: 0.62rem; font-weight: 600;
+  background: var(--accent); color: #fff;
+  padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+}
+.color-remove {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 1.1rem;
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0; line-height: 1;
+}
+.color-remove:hover { background: #fce8e8; color: var(--danger); }
+.color-card-body { padding: 16px; }
+
+/* ── ROOT EDITOR ── */
+.root-hint {
+  font-size: 0.76rem; color: var(--text);
+  background: #fdf5eb; border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 14px;
+  border-left: 3px solid var(--amber);
+  line-height: 1.55;
+}
+.editor-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.mini-upload {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; cursor: pointer; position: relative;
+  border: 2px dashed var(--accent2); border-radius: 12px;
+  padding: 12px 14px; background: #fdf9f5;
+  transition: all 0.2s; min-width: 78px; flex-shrink: 0;
+}
+.mini-upload:hover { background: #f5ede2; border-color: var(--accent); }
+.mini-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.mu-icon { font-size: 1.4rem; }
+.mu-text { font-size: 0.65rem; color: var(--muted); text-align: center; white-space: nowrap; }
+
+.editor-right { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 200px; }
+.circle-editor {
+  width: 182px; height: 182px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--amber);
+  cursor: grab;
+  position: relative;
+  background: #ede8e0;
+  flex-shrink: 0;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 0 0 4px rgba(200,151,58,0.15);
+}
+.circle-editor:active { cursor: grabbing; }
+.circle-editor img { position: absolute; pointer-events: none; user-select: none; transform-origin: center center; }
+.ce-empty-state {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; pointer-events: none;
+}
+.ce-empty-state .ce-icon { font-size: 2.2rem; opacity: 0.3; }
+.ce-empty-state .ce-hint { font-size: 0.65rem; color: var(--muted); text-align: center; padding: 0 16px; line-height: 1.4; }
+.editor-hint-row { font-size: 0.68rem; color: var(--muted); text-align: center; }
+.zoom-row { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 200px; }
+.zoom-lbl { font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+
+/* ── VARIANT ── */
+.variant-layout { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.sm-circle-wrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.sm-circle {
+  width: 106px; height: 106px;
+  border-radius: 50%; overflow: hidden;
+  border: 3px solid var(--amber);
+  position: relative; background: #ede8e0;
+  box-shadow: 0 0 0 3px rgba(200,151,58,0.12);
+  flex-shrink: 0;
+}
+.sm-circle canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+.sm-circle .sm-empty {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.66rem; color: var(--muted); text-align: center; padding: 8px;
+}
+.sm-label { font-size: 0.65rem; color: var(--muted); }
+
+.add-color-btn {
+  width: 100%; padding: 11px;
+  border: 2px dashed var(--accent2); border-radius: 13px;
+  background: transparent; color: var(--accent);
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.add-color-btn:hover { background: #fdf5eb; border-color: var(--accent); }
+
+.btn {
+  padding: 13px 20px; border: none; border-radius: 12px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem; font-weight: 600;
+  transition: all 0.2s; width: 100%;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #7a5e38; }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.55; }
+.btn-outline {
+  background: transparent; color: var(--accent);
+  border: 2px solid var(--accent);
+  margin-top: 10px; display: none;
+}
+.btn-outline:hover { background: #fdf5eb; }
+
+.result-info {
+  margin-top: 12px; padding: 10px 14px;
+  background: #f0faf3; border-radius: 10px;
+  border: 1px solid #b7e2c4;
+  font-size: 0.82rem; color: #2a6b40;
+  display: none;
+  align-items: center; gap: 8px;
+}
+
+#export-canvas { display: none; }
+.sep { border: none; border-top: 1px dashed var(--border); margin: 6px 0 14px; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; font-weight: 500; color: var(--muted);
+  text-decoration: none; padding: 7px 13px;
+  border: 1px solid var(--border); border-radius: 20px;
+  background: var(--surface); margin-bottom: 16px;
+  transition: all 0.15s;
+}
+.back-link:hover { color: var(--accent); border-color: var(--accent2); background: #fdf5eb; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+  <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+<script>document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });</script>
+<div class="wrap">
+  <a class="back-link" href="../index.html">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Voltar ao hub
+  </a>
+  <h1>🎨 Escolha Sua Cor</h1>
+  <p class="subtitle">Crie o menu de variação de cor — saída 1000×1000 px · máx 1 MB</p>
+
+  <div class="layout">
+
+    <!-- PREVIEW (sticky) -->
+    <aside class="preview-col">
+      <div class="card">
+        <div class="card-title"><span class="step-num">👁</span> Preview ao vivo</div>
+
+        <div class="preview-stage" id="preview-stage">
+          <canvas id="preview-canvas"></canvas>
+          <div class="pos-badge" id="pos-badge">x: 50% · y: 8%</div>
+          <div class="preview-drag-hint" id="drag-hint">↕ Arraste o menu para mover</div>
+        </div>
+
+        <div class="preset-section">
+          <div class="preset-row">
+            <strong>📍 Posições rápidas</strong>
+          </div>
+          <div class="preset-grid" id="preset-grid">
+            <button class="preset-btn" data-x="15" data-y="4"  title="Topo Esquerda">↖</button>
+            <button class="preset-btn" data-x="50" data-y="4"  title="Topo Centro">↑</button>
+            <button class="preset-btn" data-x="85" data-y="4"  title="Topo Direita">↗</button>
+            <button class="preset-btn" data-x="15" data-y="45" title="Meio Esquerda">←</button>
+            <button class="preset-btn" data-x="50" data-y="45" title="Centro">⊙</button>
+            <button class="preset-btn" data-x="85" data-y="45" title="Meio Direita">→</button>
+            <button class="preset-btn" data-x="15" data-y="85" title="Base Esquerda">↙</button>
+            <button class="preset-btn" data-x="50" data-y="85" title="Base Centro">↓</button>
+            <button class="preset-btn" data-x="85" data-y="85" title="Base Direita">↘</button>
+          </div>
+        </div>
+
+        <p class="preview-tip">💡 <strong>Arraste o menu</strong> no preview ou clique numa <strong>posição rápida</strong></p>
+      </div>
+    </aside>
+
+    <!-- CONTROLS -->
+    <div class="controls-col">
+
+      <div class="card">
+        <div class="card-title"><span class="step-num">1</span> Imagem de fundo</div>
+        <div class="upload-zone" id="bg-zone">
+          <input type="file" id="bg-input" accept="image/*">
+          <div class="uz-icon">🖼</div>
+          <div class="uz-text"><strong>Clique ou arraste</strong> a foto do ambiente aqui<br><span style="font-size:0.74rem;opacity:0.7">JPG, PNG ou WebP</span></div>
+        </div>
+        <div class="bg-preview" id="bg-preview">
+          <img id="bg-thumb" alt="fundo">
+          <button class="preview-clear" onclick="clearBg()" title="Remover">×</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="step-num">2</span> Aparência do menu</div>
+
+        <label class="field">
+          <span>Texto do título</span>
+          <input type="text" id="cfg-title" value="ESCOLHA SUA COR" oninput="cfg(); schedulePreview()">
+        </label>
+
+        <div class="color-picker-row" style="margin-bottom:14px">
+          <div class="color-field field" style="margin-bottom:0">
+            <span>Cor de destaque</span>
+            <div class="color-swatch" onclick="openPicker('picker-border')">
+              <div class="swatch-box" id="swatch-border" style="background:#C8973A"></div>
+              <span class="swatch-val" id="swatch-border-val">#C8973A</span>
+            </div>
+            <input type="color" id="picker-border" value="#C8973A" oninput="syncColor('border')">
+          </div>
+          <div class="color-field field" style="margin-bottom:0">
+            <span>Fundo do menu</span>
+            <div class="color-swatch" onclick="openPicker('picker-bg')">
+              <div class="swatch-box" id="swatch-bg" style="background:#FFFFFF;border:1px solid #ddd"></div>
+              <span class="swatch-val" id="swatch-bg-val">#FFFFFF</span>
+            </div>
+            <input type="color" id="picker-bg" value="#FFFFFF" oninput="syncColor('bg')">
+          </div>
+        </div>
+
+        <label class="field" style="margin-bottom:0">
+          <span>Tamanho dos círculos — raio: <b id="lbl-cirR">85</b> px</span>
+          <div class="range-group">
+            <input type="range" id="cfg-cirR" min="45" max="130" value="85" oninput="cfg(); schedulePreview()">
+          </div>
+        </label>
+
+        <hr class="sep" style="margin-top:14px">
+
+        <button class="advanced-toggle" id="adv-toggle" onclick="toggleAdvanced()">
+          <span class="arr">▸</span> Mais opções (espaçamento, borda, posição precisa)
+        </button>
+        <div class="advanced-body" id="adv-body">
+          <label class="field">
+            <span>Espaço entre círculos — <b id="lbl-spacing">18</b> px</span>
+            <div class="range-group">
+              <input type="range" id="cfg-spacing" min="4" max="40" value="18" oninput="cfg(); schedulePreview()">
+            </div>
+          </label>
+          <label class="field">
+            <span>Espessura da borda — <b id="lbl-bw">2.5</b> px</span>
+            <div class="range-group">
+              <input type="range" id="cfg-bw" min="1" max="6" step="0.5" value="2.5" oninput="cfg(); schedulePreview()">
+            </div>
+          </label>
+          <label class="field">
+            <span>Posição X — <b id="lbl-mx">50</b>%</span>
+            <div class="range-group">
+              <input type="range" id="cfg-mx" min="5" max="95" value="50" oninput="cfg(); schedulePreview()">
+            </div>
+          </label>
+          <label class="field" style="margin-bottom:0">
+            <span>Posição Y — <b id="lbl-my">8</b>%</span>
+            <div class="range-group">
+              <input type="range" id="cfg-my" min="1" max="90" value="8" oninput="cfg(); schedulePreview()">
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="step-num">3</span> Variações de cor</div>
+        <div id="color-list" class="color-list"></div>
+        <button class="add-color-btn" onclick="addColor()">＋ Adicionar cor</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="step-num">✓</span> Exportar imagem</div>
+        <button class="btn btn-primary" id="gen-btn" onclick="generateFinal()" disabled>Gerar imagem 1000×1000 ▶</button>
+        <button class="btn btn-outline" id="dl-btn" onclick="triggerDl()">⬇ Baixar imagem</button>
+        <div class="result-info" id="result-info">✅ Imagem gerada — <span id="result-size"></span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<canvas id="export-canvas"></canvas>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════
+const EDITOR_R = 91;
+
+const M = {
+  x: 500, y: 80,
+  cirR: 85, spacing: 18,
+  padX: 26, padY: 18,
+  bW: 2.5, bR: 22,
+  title: 'ESCOLHA SUA COR',
+  borderColor: '#C8973A',
+  bgColor: '#FFFFFF',
+};
+
+let bgImg = null;
+let colors = [];
+let rootT = { panX:0, panY:0, zoom:1, baseScale:1, nw:0, nh:0 };
+let colorIdCtr = 0;
+let resultUrl = null;
+let previewTimer = null;
+
+let menuDrag = false, menuDragOX = 0, menuDragOY = 0;
+let hoveringMenu = false;
+let edDragging = false, edLX = 0, edLY = 0;
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+document.fonts.ready.then(() => {
+  addColor();
+  schedulePreview();
+  bindPresets();
+});
+
+function bindPresets() {
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setPreset(parseInt(btn.dataset.x), parseInt(btn.dataset.y));
+    });
+  });
+}
+
+function setPreset(xPct, yPct) {
+  M.x = xPct * 10;
+  M.y = yPct * 10;
+  sliderSync();
+  updateActivePreset();
+  schedulePreview();
+  const badge = document.getElementById('pos-badge');
+  badge.textContent = `x: ${xPct}% · y: ${yPct}%`;
+  badge.classList.add('visible');
+  clearTimeout(setPreset._t);
+  setPreset._t = setTimeout(() => badge.classList.remove('visible'), 900);
+}
+
+function updateActivePreset() {
+  const xPct = M.x / 10, yPct = M.y / 10;
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const x = parseInt(btn.dataset.x), y = parseInt(btn.dataset.y);
+    btn.classList.toggle('active', Math.abs(xPct - x) < 4 && Math.abs(yPct - y) < 4);
+  });
+}
+
+function toggleAdvanced() {
+  document.getElementById('adv-toggle').classList.toggle('open');
+  document.getElementById('adv-body').classList.toggle('open');
+}
+
+// ════════════════════════════════════════════════════════
+//  BG IMAGE
+// ════════════════════════════════════════════════════════
+document.getElementById('bg-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadBgFile(e.target.files[0]);
+});
+document.getElementById('bg-zone').addEventListener('dragover', e => e.preventDefault());
+document.getElementById('bg-zone').addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) loadBgFile(e.dataTransfer.files[0]);
+});
+
+function loadBgFile(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    bgImg = img;
+    document.getElementById('bg-thumb').src = url;
+    document.getElementById('bg-preview').style.display = 'block';
+    checkGenBtn();
+    schedulePreview();
+  };
+  img.src = url;
+}
+
+function clearBg() {
+  bgImg = null;
+  document.getElementById('bg-preview').style.display = 'none';
+  document.getElementById('bg-input').value = '';
+  checkGenBtn();
+  schedulePreview();
+}
+
+// ════════════════════════════════════════════════════════
+//  CONFIG SYNC
+// ════════════════════════════════════════════════════════
+function cfg() {
+  M.title    = document.getElementById('cfg-title').value;
+  M.cirR     = +document.getElementById('cfg-cirR').value;
+  M.spacing  = +document.getElementById('cfg-spacing').value;
+  M.bW       = +document.getElementById('cfg-bw').value;
+  const xPct = +document.getElementById('cfg-mx').value;
+  const yPct = +document.getElementById('cfg-my').value;
+  M.x = xPct * 10;
+  M.y = yPct * 10;
+
+  document.getElementById('lbl-cirR').textContent    = M.cirR;
+  document.getElementById('lbl-spacing').textContent = M.spacing;
+  document.getElementById('lbl-bw').textContent      = M.bW;
+  document.getElementById('lbl-mx').textContent      = xPct;
+  document.getElementById('lbl-my').textContent      = yPct;
+  updateActivePreset();
+}
+
+function syncColor(which) {
+  if (which === 'border') {
+    const v = document.getElementById('picker-border').value;
+    M.borderColor = v;
+    document.getElementById('swatch-border').style.background = v;
+    document.getElementById('swatch-border-val').textContent = v;
+  } else {
+    const v = document.getElementById('picker-bg').value;
+    M.bgColor = v;
+    document.getElementById('swatch-bg').style.background = v;
+    document.getElementById('swatch-bg-val').textContent = v;
+  }
+  schedulePreview();
+}
+
+function openPicker(id) { document.getElementById(id).click(); }
+
+function sliderSync() {
+  const xPct = Math.round(M.x / 10), yPct = Math.round(M.y / 10);
+  document.getElementById('cfg-mx').value = xPct;
+  document.getElementById('cfg-my').value = yPct;
+  document.getElementById('lbl-mx').textContent = xPct;
+  document.getElementById('lbl-my').textContent = yPct;
+}
+
+// ════════════════════════════════════════════════════════
+//  COLOR CARDS
+// ════════════════════════════════════════════════════════
+function addColor() {
+  const isRoot = colors.length === 0;
+  const id = ++colorIdCtr;
+  const num = colors.length + 1;
+  const entry = { id, label: isRoot ? 'Cor 1' : `Cor ${num}`, img: null, objUrl: null };
+  colors.push(entry);
+  buildColorCard(entry, isRoot);
+  checkGenBtn();
+  schedulePreview();
+}
+
+function buildColorCard(entry, isRoot) {
+  const div = document.createElement('div');
+  div.className = 'color-card' + (isRoot ? ' is-root' : '');
+  div.id = `cc-${entry.id}`;
+
+  const hdr = document.createElement('div');
+  hdr.className = 'color-card-header';
+  hdr.innerHTML = `
+    <div class="color-num">${entry.id}</div>
+    <input class="color-label-input" type="text" value="${entry.label}"
+      oninput="updateLabel(${entry.id}, this.value)">
+    ${isRoot ? '<span class="root-badge">Referência</span>' : `<button class="color-remove" onclick="removeColor(${entry.id})" title="Remover">×</button>`}
+  `;
+  div.appendChild(hdr);
+
+  const body = document.createElement('div');
+  body.className = 'color-card-body';
+
+  if (isRoot) {
+    body.innerHTML = `
+      <div class="root-hint">
+        📌 <strong>Imagem de referência:</strong> envie uma cor do produto e posicione dentro do círculo.
+        Todas as variações vão <strong>herdar este enquadramento</strong> automaticamente.
+      </div>
+      <div class="editor-layout">
+        <label class="mini-upload">
+          <input type="file" id="root-input" accept="image/*">
+          <span class="mu-icon">📷</span>
+          <span class="mu-text">Upload</span>
+        </label>
+        <div class="editor-right">
+          <div class="circle-editor" id="circle-editor">
+            <div class="ce-empty-state" id="ce-empty">
+              <div class="ce-icon">🪑</div>
+              <div class="ce-hint">Envie a imagem para posicionar</div>
+            </div>
+          </div>
+          <div class="editor-hint-row">↔ Arraste para mover &nbsp;·&nbsp; ⟳ Scroll/pinça para zoom</div>
+          <div class="zoom-row">
+            <span class="zoom-lbl">🔍</span>
+            <input type="range" id="zoom-slider" min="15" max="400" value="100"
+              oninput="onZoomSlider(this.value)" style="flex:1;accent-color:var(--amber)">
+            <span class="range-val" id="zoom-lbl-val">1.0×</span>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    body.innerHTML = `
+      <div class="variant-layout">
+        <label class="mini-upload">
+          <input type="file" id="var-input-${entry.id}" accept="image/*">
+          <span class="mu-icon">📷</span>
+          <span class="mu-text">Upload</span>
+        </label>
+        <div class="sm-circle-wrap">
+          <div class="sm-circle" id="smc-${entry.id}">
+            <canvas id="sm-canvas-${entry.id}" width="106" height="106"></canvas>
+            <div class="sm-empty" id="sm-empty-${entry.id}">Envie a imagem</div>
+          </div>
+          <span class="sm-label">Mesmo enquadramento</span>
+        </div>
+        <div style="flex:1;font-size:0.74rem;color:var(--muted);line-height:1.5;padding-top:4px;min-width:130px">
+          A posição da referência será aplicada aqui automaticamente. Envie a foto desta cor.
+        </div>
+      </div>
+    `;
+  }
+
+  div.appendChild(body);
+  document.getElementById('color-list').appendChild(div);
+
+  if (isRoot) {
+    document.getElementById('root-input').addEventListener('change', e => {
+      if (e.target.files[0]) loadColorImg(entry.id, e.target.files[0], true);
+    });
+    setupEditorDrag();
+  } else {
+    document.getElementById(`var-input-${entry.id}`).addEventListener('change', e => {
+      if (e.target.files[0]) loadColorImg(entry.id, e.target.files[0], false);
+    });
+  }
+}
+
+function removeColor(id) {
+  const idx = colors.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  const entry = colors[idx];
+  if (entry.objUrl) URL.revokeObjectURL(entry.objUrl);
+  colors.splice(idx, 1);
+  document.getElementById(`cc-${id}`)?.remove();
+  checkGenBtn();
+  schedulePreview();
+}
+
+function updateLabel(id, val) {
+  const e = colors.find(c => c.id === id);
+  if (e) e.label = val;
+}
+
+// ════════════════════════════════════════════════════════
+//  LOAD COLOR IMAGE
+// ════════════════════════════════════════════════════════
+function loadColorImg(id, file, isRoot) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const entry = colors.find(c => c.id === id);
+    if (!entry) { URL.revokeObjectURL(url); return; }
+    if (entry.objUrl) URL.revokeObjectURL(entry.objUrl);
+    entry.img = img;
+    entry.objUrl = url;
+
+    if (isRoot) {
+      const D = EDITOR_R * 2;
+      const bs = Math.max(D / img.naturalWidth, D / img.naturalHeight);
+      rootT = { panX: 0, panY: 0, zoom: 1, baseScale: bs, nw: img.naturalWidth, nh: img.naturalHeight };
+      refreshEditorImg();
+      syncZoomSlider();
+      refreshAllSmPreviews();
+    } else {
+      refreshSmPreview(id);
+    }
+    checkGenBtn();
+    schedulePreview();
+  };
+  img.src = url;
+}
+
+// ════════════════════════════════════════════════════════
+//  CIRCLE EDITOR
+// ════════════════════════════════════════════════════════
+function setupEditorDrag() {
+  const el = document.getElementById('circle-editor');
+  if (!el) return;
+
+  el.addEventListener('mousedown', e => {
+    edDragging = true; edLX = e.clientX; edLY = e.clientY; e.preventDefault();
+  });
+  document.addEventListener('mousemove', onEditorMove);
+  document.addEventListener('mouseup', () => { edDragging = false; });
+
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    const d = e.deltaY > 0 ? -0.06 : 0.06;
+    rootT.zoom = Math.max(0.15, Math.min(5, rootT.zoom + d));
+    afterRootTChange();
+    syncZoomSlider();
+  }, { passive: false });
+
+  let touchStart = null;
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      edDragging = true; edLX = e.touches[0].clientX; edLY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+      touchStart = getTouchDist(e);
+    }
+    e.preventDefault();
+  }, { passive: false });
+  el.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && edDragging) {
+      rootT.panX += e.touches[0].clientX - edLX;
+      rootT.panY += e.touches[0].clientY - edLY;
+      edLX = e.touches[0].clientX; edLY = e.touches[0].clientY;
+    } else if (e.touches.length === 2 && touchStart) {
+      const d = getTouchDist(e);
+      rootT.zoom = Math.max(0.15, Math.min(5, rootT.zoom * (d / touchStart)));
+      touchStart = d;
+      syncZoomSlider();
+    }
+    afterRootTChange();
+    e.preventDefault();
+  }, { passive: false });
+  el.addEventListener('touchend', () => { edDragging = false; touchStart = null; });
+}
+
+function onEditorMove(e) {
+  if (!edDragging) return;
+  rootT.panX += e.clientX - edLX;
+  rootT.panY += e.clientY - edLY;
+  edLX = e.clientX; edLY = e.clientY;
+  afterRootTChange();
+}
+
+function afterRootTChange() {
+  refreshEditorImg();
+  refreshAllSmPreviews();
+  schedulePreview();
+}
+
+function getTouchDist(e) {
+  return Math.hypot(
+    e.touches[1].clientX - e.touches[0].clientX,
+    e.touches[1].clientY - e.touches[0].clientY
+  );
+}
+
+function refreshEditorImg() {
+  const editor = document.getElementById('circle-editor');
+  if (!editor) return;
+  const root = colors[0];
+  if (!root || !root.img) return;
+
+  document.getElementById('ce-empty').style.display = 'none';
+
+  let img = editor.querySelector('img');
+  if (!img) {
+    img = document.createElement('img');
+    img.draggable = false;
+    editor.appendChild(img);
+  }
+  img.src = root.img.src;
+
+  const t = rootT;
+  const dw = t.nw * t.baseScale * t.zoom;
+  const dh = t.nh * t.baseScale * t.zoom;
+  img.style.width  = dw + 'px';
+  img.style.height = dh + 'px';
+  img.style.left   = (EDITOR_R - dw / 2 + t.panX) + 'px';
+  img.style.top    = (EDITOR_R - dh / 2 + t.panY) + 'px';
+}
+
+function onZoomSlider(v) {
+  rootT.zoom = parseInt(v) / 100;
+  document.getElementById('zoom-lbl-val').textContent = rootT.zoom.toFixed(2) + '×';
+  afterRootTChange();
+}
+
+function syncZoomSlider() {
+  const sl = document.getElementById('zoom-slider');
+  const lv = document.getElementById('zoom-lbl-val');
+  if (sl) sl.value = Math.round(rootT.zoom * 100);
+  if (lv) lv.textContent = rootT.zoom.toFixed(2) + '×';
+}
+
+// ════════════════════════════════════════════════════════
+//  SMALL PREVIEWS
+// ════════════════════════════════════════════════════════
+function refreshSmPreview(id) {
+  const entry = colors.find(c => c.id === id);
+  if (!entry || !entry.img || !rootT.nw) return;
+  const canvas = document.getElementById(`sm-canvas-${id}`);
+  const emptyEl = document.getElementById(`sm-empty-${id}`);
+  if (!canvas) return;
+  if (emptyEl) emptyEl.style.display = 'none';
+  canvas.style.display = 'block';
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 106, 106);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(53, 53, 53, 0, Math.PI * 2);
+  ctx.fillStyle = '#ede8e0';
+  ctx.fill();
+  ctx.clip();
+  drawImgInCircle(ctx, entry.img, 53, 53, 53);
+  ctx.restore();
+}
+
+function refreshAllSmPreviews() {
+  colors.forEach((c, i) => { if (i > 0 && c.img) refreshSmPreview(c.id); });
+}
+
+// ════════════════════════════════════════════════════════
+//  CORE DRAW
+// ════════════════════════════════════════════════════════
+function drawImgInCircle(ctx, img, cx, cy, r) {
+  if (!rootT.nw) return;
+  const ratio = r / EDITOR_R;
+  const dw = rootT.nw * rootT.baseScale * rootT.zoom * ratio;
+  const dh = rootT.nh * rootT.baseScale * rootT.zoom * ratio;
+  const px = rootT.panX * ratio;
+  const py = rootT.panY * ratio;
+  ctx.drawImage(img, cx - dw / 2 + px, cy - dh / 2 + py, dw, dh);
+}
+
+function menuDims() {
+  const n = Math.max(colors.length, 1);
+  const cirD = M.cirR * 2;
+  const titleH = 52;
+  const w = M.padX * 2 + n * cirD + (n - 1) * M.spacing;
+  const h = M.padY * 2 + titleH + cirD + 12;
+  return { w, h, cirD, cirR: M.cirR, titleH };
+}
+
+function drawMenu(ctx, scale) {
+  const d = menuDims();
+  const bx = (M.x - d.w / 2) * scale;
+  const by = M.y * scale;
+  const bw = d.w * scale;
+  const bh = d.h * scale;
+  const bR = M.bR * scale;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.20)';
+  ctx.shadowBlur  = 20 * scale;
+  ctx.shadowOffsetY = 5 * scale;
+  rRect(ctx, bx, by, bw, bh, bR);
+  ctx.fillStyle = M.bgColor;
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  rRect(ctx, bx, by, bw, bh, bR);
+  ctx.strokeStyle = M.borderColor;
+  ctx.lineWidth   = M.bW * scale;
+  ctx.stroke();
+  ctx.restore();
+
+  const titleCY = by + (M.padY + d.titleH / 2) * scale;
+  const fs = Math.max(9, 14 * scale);
+  ctx.save();
+  ctx.font      = `600 ${fs}px 'DM Sans', Arial`;
+  ctx.fillStyle = M.borderColor;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const txt  = M.title;
+  const txtW = ctx.measureText(txt).width;
+  ctx.fillText(txt, bx + bw / 2, titleCY);
+
+  const lPad = M.padX * scale + 4 * scale;
+  const lGap = 8 * scale;
+  ctx.strokeStyle = M.borderColor;
+  ctx.lineWidth   = 1.2 * scale;
+  ctx.beginPath();
+  ctx.moveTo(bx + lPad, titleCY);
+  ctx.lineTo(bx + bw / 2 - txtW / 2 - lGap, titleCY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bx + bw / 2 + txtW / 2 + lGap, titleCY);
+  ctx.lineTo(bx + bw - lPad, titleCY);
+  ctx.stroke();
+  ctx.restore();
+
+  const cirTop = by + (M.padY + d.titleH + 6) * scale;
+  const cirR   = M.cirR * scale;
+  const cirSp  = M.spacing * scale;
+  const firstCX = bx + M.padX * scale + cirR;
+
+  colors.forEach((color, i) => {
+    const cx = firstCX + i * (cirR * 2 + cirSp);
+    const cy = cirTop + cirR;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, cirR, 0, Math.PI * 2);
+    ctx.fillStyle = '#ede8e0';
+    ctx.fill();
+
+    if (color.img && rootT.nw) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, cirR - M.bW * scale * 0.5, 0, Math.PI * 2);
+      ctx.clip();
+      drawImgInCircle(ctx, color.img, cx, cy, cirR);
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, cirR, 0, Math.PI * 2);
+    ctx.strokeStyle = M.borderColor;
+    ctx.lineWidth   = 3 * scale;
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// ────────── HOVER/DRAG OUTLINE (preview only) ──────────
+function drawMenuOutline(ctx, scale, isDragging) {
+  const d = menuDims();
+  const bx = (M.x - d.w / 2) * scale;
+  const by = M.y * scale;
+  const bw = d.w * scale;
+  const bh = d.h * scale;
+  const m  = 7 * scale;
+
+  ctx.save();
+  ctx.setLineDash([7 * scale, 5 * scale]);
+  ctx.strokeStyle = isDragging ? 'rgba(139, 111, 71, 1)' : 'rgba(139, 111, 71, 0.65)';
+  ctx.lineWidth = 2 * scale;
+  ctx.strokeRect(bx - m, by - m, bw + m * 2, bh + m * 2);
+
+  ctx.setLineDash([]);
+  const dot = 5 * scale;
+  ctx.fillStyle = isDragging ? '#8b6f47' : 'rgba(139, 111, 71, 0.85)';
+  [
+    [bx - m, by - m],
+    [bx + bw + m, by - m],
+    [bx - m, by + bh + m],
+    [bx + bw + m, by + bh + m]
+  ].forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(x, y, dot, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  if (isDragging && Math.abs(M.x - 500) < 18) {
+    ctx.strokeStyle = 'rgba(200, 151, 58, 0.7)';
+    ctx.lineWidth = 1 * scale;
+    ctx.setLineDash([4 * scale, 4 * scale]);
+    ctx.beginPath();
+    ctx.moveTo(500 * scale, 0);
+    ctx.lineTo(500 * scale, 1000 * scale);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function rRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y,     x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x,     y + h, r);
+  ctx.arcTo(x,     y + h, x,     y,     r);
+  ctx.arcTo(x,     y,     x + w, y,     r);
+  ctx.closePath();
+}
+
+// ════════════════════════════════════════════════════════
+//  PREVIEW CANVAS
+// ════════════════════════════════════════════════════════
+const pCanvas = document.getElementById('preview-canvas');
+const pCtx    = pCanvas.getContext('2d');
+
+function schedulePreview() {
+  if (previewTimer) cancelAnimationFrame(previewTimer);
+  previewTimer = requestAnimationFrame(doPreview);
+}
+
+function doPreview() {
+  const W = pCanvas.offsetWidth || 480;
+  pCanvas.width = W; pCanvas.height = W;
+  const sc = W / 1000;
+  pCtx.clearRect(0, 0, W, W);
+
+  if (bgImg) {
+    coverDraw(pCtx, bgImg, 0, 0, W, W);
+  } else {
+    pCtx.fillStyle = '#d9d2c9';
+    pCtx.fillRect(0, 0, W, W);
+    pCtx.fillStyle = 'rgba(155,142,130,0.85)';
+    pCtx.font = `500 ${Math.max(11, 13 * sc)}px 'DM Sans', sans-serif`;
+    pCtx.textAlign = 'center';
+    pCtx.textBaseline = 'middle';
+    pCtx.fillText('Envie a imagem de fundo', W / 2, W / 2 - 10 * sc);
+    pCtx.font = `${Math.max(9, 11 * sc)}px 'DM Sans', sans-serif`;
+    pCtx.fillStyle = 'rgba(155,142,130,0.65)';
+    pCtx.fillText('(Passo 1 ao lado)', W / 2, W / 2 + 14 * sc);
+  }
+
+  if (colors.length > 0) {
+    drawMenu(pCtx, sc);
+    if (hoveringMenu || menuDrag) drawMenuOutline(pCtx, sc, menuDrag);
+  } else if (bgImg) {
+    pCtx.save();
+    pCtx.fillStyle = 'rgba(44, 36, 23, 0.78)';
+    rRect(pCtx, W * 0.18, 30 * sc, W * 0.64, 38 * sc, 12 * sc);
+    pCtx.fill();
+    pCtx.fillStyle = '#fff';
+    pCtx.font = `500 ${Math.max(10, 12 * sc)}px 'DM Sans', sans-serif`;
+    pCtx.textAlign = 'center';
+    pCtx.textBaseline = 'middle';
+    pCtx.fillText('🎨 Adicione cores no Passo 3', W / 2, 30 * sc + 19 * sc);
+    pCtx.restore();
+  }
+}
+
+function coverDraw(ctx, img, x, y, w, h) {
+  const s  = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const dw = img.naturalWidth * s;
+  const dh = img.naturalHeight * s;
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+// ════════════════════════════════════════════════════════
+//  MENU DRAG ON PREVIEW
+// ════════════════════════════════════════════════════════
+function getCanvasPos(clientX, clientY) {
+  const rect = pCanvas.getBoundingClientRect();
+  const sc = 1000 / pCanvas.offsetWidth;
+  return { mx: (clientX - rect.left) * sc, my: (clientY - rect.top) * sc };
+}
+
+function isPointInMenu(mx, my) {
+  if (colors.length === 0) return false;
+  const d = menuDims();
+  const bx = M.x - d.w / 2, by = M.y;
+  const margin = 14;
+  return mx >= bx - margin && mx <= bx + d.w + margin &&
+         my >= by - margin && my <= by + d.h + margin;
+}
+
+function showPosBadge() {
+  document.getElementById('pos-badge').classList.add('visible');
+  updatePosBadge();
+}
+function hidePosBadge() {
+  setTimeout(() => {
+    if (!menuDrag) document.getElementById('pos-badge').classList.remove('visible');
+  }, 400);
+}
+function updatePosBadge() {
+  document.getElementById('pos-badge').textContent =
+    `x: ${Math.round(M.x / 10)}% · y: ${Math.round(M.y / 10)}%`;
+}
+function showDragHint() { document.getElementById('drag-hint').classList.add('show'); }
+function hideDragHint() { document.getElementById('drag-hint').classList.remove('show'); }
+
+pCanvas.addEventListener('mousedown', e => {
+  const { mx, my } = getCanvasPos(e.clientX, e.clientY);
+  if (isPointInMenu(mx, my)) {
+    menuDrag = true;
+    menuDragOX = mx - M.x;
+    menuDragOY = my - M.y;
+    pCanvas.classList.add('menu-grabbing');
+    pCanvas.classList.remove('menu-hover');
+    showPosBadge();
+    hideDragHint();
+    schedulePreview();
+    e.preventDefault();
+  }
+});
+
+pCanvas.addEventListener('mousemove', e => {
+  const { mx, my } = getCanvasPos(e.clientX, e.clientY);
+  if (menuDrag) {
+    M.x = Math.max(0, Math.min(1000, mx - menuDragOX));
+    M.y = Math.max(0, Math.min(920, my - menuDragOY));
+    if (Math.abs(M.x - 500) < 18) M.x = 500;
+    sliderSync();
+    updateActivePreset();
+    updatePosBadge();
+    schedulePreview();
+  } else {
+    const over = isPointInMenu(mx, my);
+    if (over !== hoveringMenu) {
+      hoveringMenu = over;
+      pCanvas.classList.toggle('menu-hover', over);
+      if (over) showDragHint(); else hideDragHint();
+      schedulePreview();
+    }
+  }
+});
+
+window.addEventListener('mouseup', () => {
+  if (menuDrag) {
+    menuDrag = false;
+    pCanvas.classList.remove('menu-grabbing');
+    pCanvas.classList.toggle('menu-hover', hoveringMenu);
+    hidePosBadge();
+    schedulePreview();
+  }
+});
+
+pCanvas.addEventListener('mouseleave', () => {
+  if (!menuDrag && hoveringMenu) {
+    hoveringMenu = false;
+    pCanvas.classList.remove('menu-hover');
+    hideDragHint();
+    schedulePreview();
+  }
+});
+
+pCanvas.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  const { mx, my } = getCanvasPos(t.clientX, t.clientY);
+  if (isPointInMenu(mx, my)) {
+    menuDrag = true;
+    hoveringMenu = true;
+    menuDragOX = mx - M.x;
+    menuDragOY = my - M.y;
+    showPosBadge();
+    schedulePreview();
+    e.preventDefault();
+  }
+}, { passive: false });
+
+pCanvas.addEventListener('touchmove', e => {
+  if (!menuDrag) return;
+  const t = e.touches[0];
+  const { mx, my } = getCanvasPos(t.clientX, t.clientY);
+  M.x = Math.max(0, Math.min(1000, mx - menuDragOX));
+  M.y = Math.max(0, Math.min(920, my - menuDragOY));
+  if (Math.abs(M.x - 500) < 18) M.x = 500;
+  sliderSync();
+  updateActivePreset();
+  updatePosBadge();
+  schedulePreview();
+  e.preventDefault();
+}, { passive: false });
+
+pCanvas.addEventListener('touchend', () => {
+  if (menuDrag) {
+    menuDrag = false;
+    hoveringMenu = false;
+    hidePosBadge();
+    schedulePreview();
+  }
+});
+
+// ════════════════════════════════════════════════════════
+//  GENERATE FINAL
+// ════════════════════════════════════════════════════════
+const eCanvas = document.getElementById('export-canvas');
+const eCtx    = eCanvas.getContext('2d');
+
+async function generateFinal() {
+  if (!bgImg || colors.length === 0) return;
+  const btn = document.getElementById('gen-btn');
+  btn.textContent = 'Gerando…';
+  btn.disabled = true;
+  await new Promise(r => setTimeout(r, 30));
+
+  const OUT = 1000;
+  eCanvas.width = OUT; eCanvas.height = OUT;
+  eCtx.clearRect(0, 0, OUT, OUT);
+  coverDraw(eCtx, bgImg, 0, 0, OUT, OUT);
+  drawMenu(eCtx, 1);
+
+  const blob = await compressTo(eCanvas, 1000 * 1024);
+  if (resultUrl) URL.revokeObjectURL(resultUrl);
+  resultUrl = URL.createObjectURL(blob);
+
+  const kb = Math.round(blob.size / 1024);
+  document.getElementById('result-size').textContent = `${kb} KB · JPEG 1000×1000`;
+  document.getElementById('result-info').style.display = 'flex';
+  document.getElementById('dl-btn').style.display = 'block';
+
+  btn.textContent = '✓ Gerado — gerar novamente ▶';
+  btn.style.background = '#4a7c59';
+  btn.disabled = false;
+  setTimeout(() => {
+    btn.textContent = 'Gerar imagem 1000×1000 ▶';
+    btn.style.background = '';
+  }, 4000);
+}
+
+async function compressTo(canvas, maxBytes) {
+  let q = 0.93, blob;
+  for (let i = 0; i < 14; i++) {
+    blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', q));
+    if (blob.size <= maxBytes) break;
+    q = Math.max(0.25, q - 0.06);
+  }
+  return blob;
+}
+
+function triggerDl() {
+  if (!resultUrl) return;
+  const a = document.createElement('a');
+  a.href = resultUrl; a.download = 'escolha-sua-cor.jpg'; a.click();
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+function checkGenBtn() {
+  const ok = !!bgImg && colors.length > 0 && colors.some(c => c.img);
+  document.getElementById('gen-btn').disabled = !ok;
+}
+
+window.addEventListener('resize', () => schedulePreview());
+</script>
+</body>
+</html>

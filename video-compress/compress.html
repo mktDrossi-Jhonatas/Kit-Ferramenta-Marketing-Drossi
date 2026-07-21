@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <script src="theme.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VideoPress — Compressor de Vídeo (rede local)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f0eb; --surface:#fff; --accent:#8b6f47; --accent2:#c4a882;
+      --text:#2c2417; --muted:#9b8e82; --border:#e8ddd4; --shadow:rgba(139,111,71,.12);
+      --success:#4a7c59; --success-bg:#eef6f1; --danger:#c0392b; --danger-bg:#fdf2f0;
+      --amber:#b8792a; --amber-bg:#fbeed0; --blue:#4a6b8b; --blue-bg:#eaf1f7;
+      --hover-tint:#f5ede2; --hover-tint2:#fdf5eb; --btn-hover:#7a5e38;
+    }
+    :root[data-theme="dark"]{
+      --bg:#1c1712; --surface:#262019; --accent:#d9b26e; --accent2:#a9855a;
+      --text:#f0e9df; --muted:#a89a89; --border:#3a3226; --shadow:rgba(0,0,0,.35);
+      --success:#7fc496; --success-bg:#1e2f24; --danger:#e07a6a; --danger-bg:#3a201f;
+      --amber:#d9a656; --amber-bg:#3a2e17; --blue:#7fa3c4; --blue-bg:#1e2a35;
+      --hover-tint:#33291c; --hover-tint2:#33291c; --btn-hover:#e6c384;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background-color .25s ease,color .25s ease}
+    button,input,select,textarea{font-family:inherit}
+    .theme-toggle{position:fixed;top:16px;right:16px;z-index:200;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;box-shadow:0 2px 10px var(--shadow);transition:all .15s}
+    .theme-toggle:hover{border-color:var(--accent2);color:var(--accent);transform:translateY(-1px) rotate(15deg)}
+    .theme-toggle svg{display:block}
+    .theme-toggle .i-moon{display:none}
+    :root[data-theme="dark"] .theme-toggle .i-sun{display:none}
+    :root[data-theme="dark"] .theme-toggle .i-moon{display:block}
+    :root[data-theme="dark"] header{background:rgba(28,23,18,.9)}
+    :root[data-theme="dark"] .thumb .ext-badge{background:rgba(38,32,25,.85)}
+    header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+    .header-inner{max-width:1152px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo-icon{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--accent),#a9855a);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(139,111,71,.3);flex-shrink:0}
+    .logo h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;line-height:1.1}
+    .logo p{font-size:12px;color:var(--muted);margin-top:2px}
+    .header-right{display:flex;align-items:center;gap:10px}
+    .badge{display:inline-flex;align-items:center;gap:6px;background:var(--hover-tint2);border:1px solid var(--accent2);color:var(--accent);padding:6px 13px;border-radius:999px;font-size:12px;font-weight:600}
+    .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+
+    main{max-width:1152px;margin:0 auto;padding:28px 20px 60px}
+
+    #dropzone{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 28px;border-radius:16px;border:2px dashed var(--accent2);background:var(--hover-tint2);cursor:pointer;transition:all .2s;text-align:center}
+    #dropzone:hover,#dropzone.drag-over{background:var(--hover-tint);border-color:var(--accent)}
+    #dropzone.drag-over{transform:scale(1.005)}
+    .dz-icon{width:60px;height:60px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+    .dz-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600}
+    .dz-sub{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+    .status-bar{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:13px;color:var(--muted)}
+    .status-bar strong{color:var(--text)}
+    #statusHint.is-error{color:var(--danger)}
+
+    .panel{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:0 2px 12px var(--shadow)}
+    .panel-row{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end}
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field span{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .field input[type=text]{padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);width:340px;max-width:100%;font-family:inherit;font-size:13px;color:var(--text);background:var(--surface)}
+    .field input[type=number]{padding:8px 10px;border-radius:9px;border:1.5px solid var(--border);width:88px;font-family:inherit;font-size:13px}
+    .field input:focus{outline:none;border-color:var(--accent)}
+    .field.checkbox{flex-direction:row;align-items:center;gap:8px}
+    .field.checkbox span{text-transform:none;font-weight:500;font-size:13px;color:var(--text)}
+    .hint-small{font-size:11.5px;color:var(--muted)}
+    .spacer{flex:1;min-width:8px}
+
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:none;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease,color .15s ease}
+    .btn svg{transition:transform .2s ease}
+    .btn:active:not(:disabled){transform:scale(.96)}
+    .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(139,111,71,.28)}
+    .btn.primary:hover:not(:disabled){background:var(--btn-hover);transform:translateY(-2px);box-shadow:0 8px 18px rgba(139,111,71,.35)}
+    .btn.primary:hover:not(:disabled) svg{transform:translateY(1px)}
+    .btn.secondary{background:var(--hover-tint2);color:var(--accent);border:1px solid var(--accent2)}
+    .btn.secondary:hover:not(:disabled){background:var(--hover-tint);transform:translateY(-2px);box-shadow:0 6px 14px rgba(139,111,71,.16)}
+    .btn.secondary:hover:not(:disabled) svg{transform:translateY(1px)}
+    .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+    .btn.ghost:hover:not(:disabled){background:var(--danger-bg);color:var(--danger);border-color:#f7ddd8;transform:translateY(-2px)}
+
+    #grid{margin-top:22px;display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:680px){#grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:1040px){#grid{grid-template-columns:repeat(3,1fr)}}
+
+    .empty-state{margin-top:22px;text-align:center;padding:34px 20px;color:var(--muted);font-size:13.5px}
+    .empty-state .big{font-size:1.8rem;margin-bottom:8px}
+
+    .card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:border-color .15s,box-shadow .2s ease,transform .2s ease}
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+    .card.done{border-color:var(--success);box-shadow:0 0 0 3px rgba(74,124,89,.14)}
+    .card.error{border-color:var(--danger)}
+    @keyframes flashDone{0%{box-shadow:0 0 0 0 rgba(74,124,89,.5)}70%{box-shadow:0 0 0 16px rgba(74,124,89,0)}100%{box-shadow:0 0 0 0 rgba(74,124,89,0)}}
+    .card.flash-done{animation:flashDone 1s ease-out}
+    .done-banner{display:flex;align-items:center;gap:7px;background:var(--success-bg);color:var(--success);font-size:12px;font-weight:700;padding:7px 10px;border-radius:9px}
+    .done-banner svg{flex-shrink:0}
+    .thumb{position:relative;height:108px;background:var(--hover-tint);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .thumb video{width:100%;height:100%;object-fit:cover;transition:transform .3s ease}
+    .card:hover .thumb video{transform:scale(1.04)}
+    .thumb .ext-badge{position:relative;z-index:1;font-family:'Playfair Display',serif;font-weight:600;font-size:14px;color:var(--accent);background:rgba(255,255,255,.85);border:1px solid var(--accent2);padding:4px 12px;border-radius:8px}
+    .card-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
+    .name{font-weight:600;font-size:13.5px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sizes-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+    .sizes-row .arrow{opacity:.5}
+    .sizes-row .green{color:var(--success);font-weight:700}
+    .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;width:fit-content}
+    .status-pill.ready{background:var(--hover-tint2);color:var(--accent)}
+    .status-pill.uploading{background:var(--blue-bg,#eaf1f7);color:var(--blue,#4a6b8b)}
+    .status-pill.processing{background:var(--amber-bg);color:var(--amber)}
+    .status-pill.done{background:var(--success-bg);color:var(--success)}
+    .status-pill.error{background:var(--danger-bg);color:var(--danger)}
+    .progress{position:relative;height:6px;background:var(--border);border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));width:0;transition:width .2s}
+    .progress.indeterminate > i{position:absolute;top:0;left:0;width:35%;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--amber-bg),var(--amber),var(--amber-bg));animation:indet 1.15s ease-in-out infinite}
+    @keyframes indet{0%{left:-35%}100%{left:100%}}
+    .progress-label{font-size:11px;color:var(--muted);text-align:right;margin-top:5px;display:flex;align-items:center;justify-content:flex-end;gap:5px}
+    .progress-label .spin{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--amber-bg);border-top-color:var(--amber);animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .err-msg{font-size:11.5px;color:var(--danger);background:var(--danger-bg);border-radius:8px;padding:6px 9px;line-height:1.4}
+    .card-actions{display:flex;gap:7px}
+    .card-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 0;border-radius:9px;font-size:12.5px;font-weight:600;border:none;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease,color .15s ease}
+    .card-btn svg{transition:transform .2s ease}
+    .card-btn:active:not(:disabled){transform:scale(.95)}
+    .card-btn:disabled{opacity:.5;cursor:not-allowed}
+    .card-btn.pri{background:var(--accent);color:#fff}
+    .card-btn.pri:hover:not(:disabled){background:var(--btn-hover);box-shadow:0 5px 14px rgba(139,111,71,.32);transform:translateY(-1px)}
+    .card-btn.pri:hover:not(:disabled) svg{transform:translateY(2px)}
+    .card-btn.sec{background:var(--hover-tint2);color:var(--accent)}
+    .card-btn.sec:hover:not(:disabled){background:var(--hover-tint);transform:translateY(-1px)}
+    .card-btn.gh{background:transparent;color:var(--muted);border:1px solid var(--border);flex:0 0 auto;padding:8px 12px}
+    .card-btn.gh:hover{background:var(--danger-bg);color:var(--danger);border-color:#f7ddd8;transform:rotate(90deg)}
+
+    footer{max-width:1152px;margin:36px auto 0;padding:18px 20px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border);text-align:center}
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+    <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <div>
+          <h1>VideoPress</h1>
+          <p>Compressor de vídeo — processamento na rede local</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="badge"><span class="dot"></span> Processamento local</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="dropzone">
+      <div class="dz-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </div>
+      <div class="dz-title">Arraste os vídeos aqui</div>
+      <div class="dz-sub">ou clique para selecionar — até <strong>600 MB</strong> por arquivo</div>
+      <input id="fileInput" type="file" accept="video/*" multiple style="display:none">
+    </div>
+
+    <div class="status-bar">
+      <span id="serverNotice">Detectando servidor…</span>
+      <span id="selectedCount"><strong>Nenhum</strong> vídeo selecionado</span>
+    </div>
+    <div class="status-bar" style="margin-top:2px">
+      <span id="statusHint"></span>
+    </div>
+
+    <div class="panel">
+      <div class="panel-row">
+        <label class="field" id="serverUrlField">
+          <span>URL do servidor</span>
+          <input id="serverUrl" type="text" placeholder="http://192.168.x.x:3100/compress">
+        </label>
+        <label class="field">
+          <span>Tamanho alvo (MB)</span>
+          <input id="globalTarget" type="number" min="1" value="30">
+        </label>
+        <label class="field checkbox">
+          <input id="globalExact" type="checkbox">
+          <span>Tamanho exato <span class="hint-small">(2 passes, mais lento)</span></span>
+        </label>
+        <div class="spacer"></div>
+        <span class="hint-small">Máximo 600 MB por arquivo</span>
+      </div>
+      <div class="actions">
+        <button id="sendAll" class="btn primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+          Comprimir todos
+        </button>
+        <button id="downloadAll" class="btn secondary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar todos
+        </button>
+        <button id="clearAll" class="btn ghost">Limpar</button>
+      </div>
+    </div>
+
+    <div id="grid"></div>
+    <div id="emptyState" class="empty-state">
+      <div class="big">🎬</div>
+      Nenhum vídeo na fila ainda — arraste arquivos na área acima para começar.
+    </div>
+  </main>
+
+  <footer>VideoPress · processamento 100% local na sua rede · abra este endereço em qualquer dispositivo conectado ao mesmo Wi-Fi · <a href="logs.html" style="color:var(--accent)">ver logs de atividade</a></footer>
+
+  <script>
+    document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });
+    const MAX_BYTES = 600 * 1024 * 1024;
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const grid = document.getElementById('grid');
+    const emptyState = document.getElementById('emptyState');
+    const statusHint = document.getElementById('statusHint');
+    const serverNotice = document.getElementById('serverNotice');
+    const serverUrlField = document.getElementById('serverUrlField');
+    const serverUrlInput = document.getElementById('serverUrl');
+    const globalTarget = document.getElementById('globalTarget');
+    const globalExact = document.getElementById('globalExact');
+    const sendAll = document.getElementById('sendAll');
+    const downloadAll = document.getElementById('downloadAll');
+    const clearAllBtn = document.getElementById('clearAll');
+    const selectedCount = document.getElementById('selectedCount');
+    const createId = () => (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + '-' + Date.now());
+
+    let items = [];
+
+    dropzone.addEventListener('click', ()=>fileInput.click());
+    dropzone.addEventListener('dragover', e=>{e.preventDefault();dropzone.classList.add('drag-over')});
+    dropzone.addEventListener('dragleave', ()=>{dropzone.classList.remove('drag-over')});
+    dropzone.addEventListener('drop', e=>{e.preventDefault();dropzone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files)});
+    fileInput.addEventListener('change', e=>{handleFiles(e.target.files); fileInput.value='';});
+
+    function setStatusHint(message, isError = false){
+      statusHint.textContent = message;
+      statusHint.classList.toggle('is-error', isError);
+    }
+
+    function updateSelectedCount(){
+      selectedCount.innerHTML = items.length === 0 ? '<strong>Nenhum</strong> vídeo selecionado' : '<strong>' + items.length + '</strong> vídeo(s) na fila';
+    }
+
+    function formatMB(bytes){ return (bytes/1024/1024).toFixed(1) + ' MB'; }
+
+    function handleFiles(list){
+      let added = 0, rejected = 0;
+      for(const f of list){
+        if(f.size > MAX_BYTES){ rejected++; continue; }
+        items.push({
+          id: createId(),
+          file: f,
+          name: f.name,
+          size: f.size,
+          status: 'ready',
+          progress: 0,
+          targetMB: parseInt(globalTarget.value) || 30,
+          exact: globalExact.checked,
+          previewUrl: URL.createObjectURL(f),
+          result: null
+        });
+        added++;
+      }
+      if(rejected>0) setStatusHint(rejected + ' arquivo(s) ignorado(s) — acima do limite de 600 MB.', true);
+      else if(added > 0) setStatusHint(added + ' arquivo(s) adicionado(s). Clique em "Comprimir todos" quando estiver pronto.');
+      updateSelectedCount();
+      render();
+    }
+
+    function getServerUrl(){
+      const custom = serverUrlInput.value.trim();
+      if(custom) return custom;
+      if(location.protocol !== 'file:' && location.origin && location.origin !== 'null') return location.origin + '/compress';
+      return '';
+    }
+
+    function downloadAllReady(){
+      const readyItems = items.filter(i => i.status==='done' && i.result && i.result.url);
+      if(readyItems.length === 0){ setStatusHint('Nenhum arquivo pronto para download ainda.', true); return; }
+      readyItems.forEach(item => downloadFile(item.result.url, (item.result.filename || (item.name.replace(/\.[^.]+$/, '') + '_compressed.mp4'))));
+    }
+
+    sendAll.addEventListener('click', ()=>{
+      const url = getServerUrl();
+      if(items.length===0){ setStatusHint('Adicione ao menos um vídeo antes de comprimir.', true); return; }
+      if(!url){ setStatusHint('Servidor não detectado — informe a URL manualmente acima.', true); return; }
+      const pending = items.filter(it => it.status==='ready' || it.status==='error');
+      if(pending.length===0){ setStatusHint('Todos os vídeos já foram processados.'); return; }
+      setStatusHint('Comprimindo ' + pending.length + ' arquivo(s)…');
+      pending.forEach(it => uploadOne(it, url));
+    });
+
+    clearAllBtn.addEventListener('click', ()=>{
+      items.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
+      items=[]; render(); updateSelectedCount(); setStatusHint('');
+    });
+    downloadAll.addEventListener('click', downloadAllReady);
+
+    if (location.protocol !== 'file:') {
+      const defaultUrl = location.origin + '/compress';
+      serverUrlInput.value = defaultUrl;
+      serverUrlField.style.display = 'none';
+      serverNotice.innerHTML = '✓ Servidor detectado automaticamente';
+    } else {
+      serverNotice.textContent = 'Abra esta página via servidor HTTP para enviar vídeos automaticamente.';
+      setStatusHint('Página aberta localmente via file:// — preencha a URL do servidor manualmente.', true);
+    }
+
+    function updateProgress(id, pct){ const it = items.find(x=>x.id===id); if(!it) return; it.progress = pct; render(); }
+
+    function uploadOne(it, url){
+      it.status = 'uploading'; it.progress = 0; it._announced = false; render();
+      const xhr = new XMLHttpRequest(); xhr.open('POST', url, true); xhr.responseType='json';
+      xhr.upload.onprogress = e => { if(e.lengthComputable) updateProgress(it.id, Math.round(e.loaded/e.total*100)); };
+      xhr.upload.onload = () => { if(it.status==='uploading'){ it.status='processing'; render(); } };
+      xhr.onload = () => {
+        if(xhr.status>=200 && xhr.status<300){
+          it.status='done';
+          it.result = xhr.response || {};
+          it.progress=100;
+        } else {
+          let msg = 'HTTP '+xhr.status;
+          try { const json = JSON.parse(xhr.responseText || '{}'); if(json && json.error) msg += ' — ' + json.error; } catch(_) {}
+          it.status='error';
+          it.result={message:msg};
+        }
+        render();
+      };
+      xhr.onerror = ()=>{ it.status='error'; it.result={message:'Erro de rede — verifique se o servidor está no ar.'}; render(); };
+      const fd = new FormData(); fd.append('file', it.file, it.name); fd.append('target_mb', String(it.targetMB||30)); fd.append('exact', it.exact?'true':'false'); xhr.send(fd);
+    }
+
+    async function downloadFile(url, name){ try{ const resp = await fetch(url); if(!resp.ok) throw new Error('HTTP '+resp.status); const blob = await resp.blob(); const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=u; a.download = name || url.split('/').pop(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000);}catch(e){setStatusHint('Erro ao baixar: '+e.message, true)} }
+
+    function removeItem(id){
+      const it = items.find(i=>i.id===id);
+      if(it && it.previewUrl) URL.revokeObjectURL(it.previewUrl);
+      items = items.filter(i=>i.id!==id); render(); updateSelectedCount();
+    }
+
+    const STATUS_MAP = {
+      ready:      { label: 'Pronto para comprimir',    cls: 'ready' },
+      uploading:  { label: 'Enviando…',                cls: 'uploading' },
+      processing: { label: 'Processando no servidor…', cls: 'processing' },
+      done:       { label: 'Comprimido',               cls: 'done' },
+      error:      { label: 'Erro',                     cls: 'error' },
+    };
+
+    // Builds the static shell of a card ONCE per item — crucially, the <video> thumb
+    // is created here only, never touched again, so re-renders during upload/processing
+    // (which fire many times per second) don't reload/flicker the video.
+    function buildCard(it){
+      const card = document.createElement('div');
+      card.dataset.id = it.id;
+
+      const thumb = document.createElement('div'); thumb.className='thumb';
+      if(it.previewUrl){
+        const vid = document.createElement('video'); vid.src = it.previewUrl; vid.muted = true; vid.preload = 'metadata';
+        vid.addEventListener('loadeddata', ()=>{ try{ vid.currentTime = Math.min(1, (vid.duration||1)/4); }catch(_){} });
+        thumb.appendChild(vid);
+      } else {
+        thumb.innerHTML = `<span class="ext-badge">${(it.name.split('.').pop()||'').toUpperCase()}</span>`;
+      }
+
+      const body = document.createElement('div'); body.className='card-body';
+      const title = document.createElement('div'); title.className='name'; title.title = it.name; title.textContent = it.name;
+      const sizes = document.createElement('div'); sizes.className='sizes-row';
+      const statusBadge = document.createElement('div'); statusBadge.className='status-pill';
+      const dynZone = document.createElement('div'); dynZone.className='dyn-zone';
+      const actions = document.createElement('div'); actions.className='card-actions';
+      body.append(title, sizes, statusBadge, dynZone, actions);
+      card.append(thumb, body);
+
+      patchCard(card, it);
+      return card;
+    }
+
+    // Updates everything that can change (status, progress, buttons) without
+    // touching the thumb — this is what runs on every progress tick.
+    function patchCard(card, it){
+      card.className='card' + (it.status==='done'?' done':'') + (it.status==='error'?' error':'');
+      if(it.status==='done' && !it._announced){ card.classList.add('flash-done'); it._announced = true; }
+
+      const body = card.querySelector('.card-body');
+      const sizes = body.querySelector('.sizes-row');
+      if(it.status==='done' && it.result && it.result.size_mb!=null){
+        const pct = it.size>0 ? Math.round((1 - (it.result.size_mb*1024*1024)/it.size)*100) : 0;
+        sizes.innerHTML = `${formatMB(it.size)} <span class="arrow">→</span> <span class="green">${it.result.size_mb} MB</span>${pct>0?` · −${pct}%`:''}`;
+      } else {
+        sizes.textContent = formatMB(it.size) + ' · alvo ' + (it.targetMB||30) + ' MB' + (it.exact?' (exato)':'');
+      }
+
+      const statusInfo = STATUS_MAP[it.status] || STATUS_MAP.ready;
+      const statusBadge = body.querySelector('.status-pill');
+      statusBadge.className = 'status-pill ' + statusInfo.cls;
+      statusBadge.textContent = statusInfo.label;
+
+      const dynZone = body.querySelector('.dyn-zone');
+      dynZone.innerHTML = '';
+      if(it.status==='uploading'){
+        dynZone.innerHTML = `<div class="progress"><i style="width:${it.progress||0}%"></i></div><div class="progress-label">${it.progress||0}%</div>`;
+      } else if(it.status==='processing'){
+        dynZone.innerHTML = `<div class="progress indeterminate"><i></i></div><div class="progress-label"><span class="spin"></span> codificando…</div>`;
+      } else if(it.status==='done' && it.result && it.result.url){
+        dynZone.innerHTML = `<div class="done-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Pronto para baixar</div>`;
+      } else if(it.status==='error' && it.result && it.result.message){
+        const err = document.createElement('div'); err.className='err-msg'; err.textContent = it.result.message;
+        dynZone.appendChild(err);
+      }
+
+      const actions = body.querySelector('.card-actions');
+      actions.innerHTML = '';
+      if(it.status==='done' && it.result && it.result.url){
+        const dlBtn = document.createElement('button'); dlBtn.className='card-btn pri';
+        dlBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Baixar';
+        dlBtn.addEventListener('click', ()=>downloadFile(it.result.url, (it.result.filename || (it.name.replace(/\.[^.]+$/, '') + '_compressed.mp4'))));
+        actions.appendChild(dlBtn);
+      } else {
+        const sendBtn = document.createElement('button'); sendBtn.className='card-btn pri';
+        sendBtn.textContent = it.status==='ready' ? 'Comprimir' : it.status==='error' ? 'Tentar de novo' : it.status==='uploading' ? 'Enviando…' : 'Processando…';
+        sendBtn.disabled = it.status==='uploading' || it.status==='processing';
+        sendBtn.addEventListener('click', ()=>{
+          const url = getServerUrl();
+          if(!url){ setStatusHint('Informe a URL do servidor de compressão antes de enviar.', true); return; }
+          uploadOne(it, url);
+        });
+        actions.appendChild(sendBtn);
+      }
+      const remove = document.createElement('button'); remove.className='card-btn gh'; remove.textContent='×'; remove.title='Remover';
+      remove.addEventListener('click', ()=>removeItem(it.id));
+      actions.appendChild(remove);
+    }
+
+    function render(){
+      emptyState.style.display = items.length===0 ? '' : 'none';
+      grid.style.display = items.length===0 ? 'none' : 'grid';
+
+      const liveIds = new Set(items.map(it=>String(it.id)));
+      Array.from(grid.children).forEach(card=>{ if(!liveIds.has(card.dataset.id)) card.remove(); });
+
+      items.forEach(it=>{
+        const existing = grid.querySelector(`[data-id="${it.id}"]`);
+        if(existing) patchCard(existing, it);
+        else grid.appendChild(buildCard(it));
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

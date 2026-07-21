@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compressor em Massa — Padrão Shopee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      if (location.protocol.startsWith('http')) {
+        location.replace('/compress.html');
+      } else {
+        document.body.innerHTML = '<div style="font-family:Arial,sans-serif;padding:40px;text-align:center;
+          "><h1>Abrir o servidor primeiro</h1><p>Use <strong>http://192.168.2.115:3100/compress.html</strong> no navegador.</p></div>';
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <script src="../theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImagePress – Compressor de Imagens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface: #fff;
+      --indigo-50: #fdf5eb; --indigo-100: #f5ede2; --indigo-400: #c4a882;
+      --indigo-500: #ab8a5e; --indigo-600: #8b6f47; --indigo-700: #7a5e38;
+      --indigo-800: #5f4a2e; --violet-600: #a9855a;
+      --emerald-50: #eef6f1; --emerald-100: #d8ebe0; --emerald-500: #5f9873;
+      --emerald-600: #4a7c59; --emerald-700: #3a6347;
+      --blue-50: #f1f0ea; --blue-100: #e3e0d4; --blue-500: #8b6f47; --blue-600: #7a5e38;
+      --violet-500: #c4a882;
+      --red-50: #fdf2f0; --red-100: #f7ddd8; --red-500: #c0392b; --red-600: #a53324;
+      --amber-100: #fbeed0; --amber-600: #b8792a;
+      --slate-50: #f9f5f0; --slate-100: #f5f0eb; --slate-200: #e8ddd4;
+      --slate-300: #d8c9ba; --slate-400: #9b8e82; --slate-500: #7d7166;
+      --slate-700: #4a3f34; --slate-800: #2c2417;
+    }
+    :root[data-theme="dark"] {
+      --surface: #262019;
+      --indigo-50: #33291c; --indigo-100: #3a2f20; --indigo-400: #a9855a;
+      --indigo-500: #c4a276; --indigo-600: #d9b26e; --indigo-700: #e6c384;
+      --indigo-800: #f0d9ab; --violet-600: #c4a276;
+      --emerald-50: #1e2f24; --emerald-100: #23392b; --emerald-500: #6fae82;
+      --emerald-600: #7fc496; --emerald-700: #96d4ab;
+      --blue-50: #201a14; --blue-100: #2a2219; --blue-500: #d9b26e; --blue-600: #e6c384;
+      --violet-500: #a9855a;
+      --red-50: #3a201f; --red-100: #452724; --red-500: #e07a6a; --red-600: #eb9484;
+      --amber-100: #3a2e17; --amber-600: #d9a656;
+      --slate-50: #201a14; --slate-100: #1c1712; --slate-200: #3a3226;
+      --slate-300: #4a4232; --slate-400: #a89a89; --slate-500: #beb2a2;
+      --slate-700: #d9cfc2; --slate-800: #f0e9df;
+    }
+    body { transition: background-color .25s ease, color .25s ease; }
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--slate-200); background: var(--surface); color: var(--slate-500); cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.1); transition: all .15s; }
+    .theme-toggle:hover { border-color: var(--indigo-400); color: var(--indigo-600); transform: translateY(-1px) rotate(15deg); }
+    .theme-toggle svg { display: block; }
+    .theme-toggle .i-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-moon { display: block; }
+    :root[data-theme="dark"] header { background: rgba(28,23,18,.85); }
+    :root[data-theme="dark"] .card-checkbox { background: rgba(38,32,25,.75); border-color: rgba(255,255,255,.15); }
+    :root[data-theme="dark"] .card-checkbox:hover { background: var(--surface); }
+    :root[data-theme="dark"] .card-overlay { background: rgba(28,23,18,.75); }
+    :root[data-theme="dark"] .remove-btn { background: rgba(38,32,25,.85); }
+    :root[data-theme="dark"] footer { background: rgba(28,23,18,.6); }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--slate-100);
+      min-height: 100vh; color: var(--slate-800);
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 500; color: var(--slate-400);
+      text-decoration: none; padding: 6px 12px;
+      border: 1px solid var(--slate-200); border-radius: 20px;
+      background: var(--surface); transition: all .15s;
+    }
+    .back-link:hover { color: var(--indigo-600); border-color: var(--indigo-400); background: var(--indigo-50); }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(255,255,255,.85); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .header-inner {
+      max-width: 1152px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 24px;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--indigo-500), var(--violet-600));
+      box-shadow: 0 4px 12px rgba(139,111,71,.3);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 20px; height: 20px; color: white; }
+    .logo h1 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 600; line-height: 1; color: var(--slate-800); }
+    .logo p  { font-size: 12px; color: var(--slate-400); margin-top: 2px; }
+    .badge-local {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--indigo-50); color: var(--indigo-600);
+      border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 500;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--indigo-500); }
+
+    /* ── Main ── */
+    main { max-width: 1152px; margin: 0 auto; padding: 32px 16px; }
+
+    /* ── Dropzone ── */
+    #dropzone {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; border-radius: 16px;
+      border: 2px dashed var(--slate-300); background: var(--surface);
+      cursor: pointer; user-select: none;
+      transition: all .2s ease; padding: 56px 32px;
+    }
+    #dropzone:hover, #dropzone.drag-over { border-color: var(--indigo-500); background: var(--indigo-50); }
+    #dropzone.drag-over { transform: scale(1.01); }
+    .dz-icon {
+      width: 64px; height: 64px; border-radius: 16px; background: var(--slate-100);
+      display: flex; align-items: center; justify-content: center; transition: background .2s;
+    }
+    #dropzone.drag-over .dz-icon { background: var(--indigo-100); }
+    .dz-icon svg { width: 32px; height: 32px; color: var(--slate-400); transition: color .2s; }
+    #dropzone.drag-over .dz-icon svg { color: var(--indigo-500); }
+    .dz-text p:first-child { font-size: 15px; font-weight: 600; color: var(--slate-700); text-align: center; }
+    .dz-text p:last-child  { font-size: 13px; color: var(--slate-400); text-align: center; margin-top: 4px; }
+    .dz-hints { display: flex; gap: 16px; font-size: 12px; color: var(--slate-400); }
+    .dz-hint  { display: flex; align-items: center; gap: 4px; }
+    .dot-indigo { width: 8px; height: 8px; border-radius: 50%; background: var(--indigo-400); display: inline-block; }
+    .dot-violet { width: 8px; height: 8px; border-radius: 50%; background: var(--violet-500); display: inline-block; }
+
+    /* ── Stats ── */
+    #stats { display: none; grid-template-columns: repeat(2,1fr); gap: 12px; margin-top: 24px; }
+    @media(min-width:640px) { #stats { grid-template-columns: repeat(4,1fr); } }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--slate-200);
+      border-radius: 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing:.05em; color: var(--slate-400); font-weight: 600; }
+    .stat-value { font-size: 20px; font-weight: 700; margin-top: 4px; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .grad-indigo  { background-image: linear-gradient(to right, var(--indigo-500),  var(--indigo-600));  }
+    .grad-emerald { background-image: linear-gradient(to right, var(--emerald-500), var(--emerald-600)); }
+    .grad-blue    { background-image: linear-gradient(to right, var(--blue-500),    var(--blue-600));    }
+    .grad-violet  { background-image: linear-gradient(to right, var(--violet-500),  var(--violet-600));  }
+
+    /* ── Actions bar ── */
+    #actions { display: none; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 12px; padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all .15s ease; }
+    .btn:active { transform: scale(.96); }
+    .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .btn-indigo  { background: var(--indigo-600);  color: white; box-shadow: 0 4px 12px rgba(139,111,71,.25); }
+    .btn-indigo:hover  { background: var(--indigo-700);  }
+    .btn-indigo:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+    .btn-emerald { background: var(--emerald-600); color: white; box-shadow: 0 4px 12px rgba(74,124,89,.25); }
+    .btn-emerald:hover { background: var(--emerald-700); }
+    .btn-violet  { background: var(--violet-500);  color: white; box-shadow: 0 4px 12px rgba(196,168,130,.35); }
+    .btn-violet:hover  { background: #7c3aed; }
+    .btn-ghost   { background: var(--surface); color: var(--slate-500); border: 1px solid var(--slate-200); }
+    .btn-ghost:hover   { background: var(--red-50); color: var(--red-600); border-color: var(--red-100); }
+    .spacer { flex: 1; }
+
+    /* ── Chain rename bar ── */
+    #chainBar {
+      display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: linear-gradient(135deg, #ede9fe, #eef2ff);
+      border: 1.5px solid var(--indigo-200, #c7d2fe);
+      border-radius: 14px; padding: 12px 16px; margin-top: 16px;
+    }
+    #chainBar .chain-label {
+      font-size: 13px; font-weight: 600; color: var(--indigo-700, #4338ca);
+      white-space: nowrap;
+    }
+    #chainInput {
+      flex: 1; min-width: 160px; max-width: 320px;
+      border: 1.5px solid var(--indigo-300, #a5b4fc); border-radius: 10px;
+      padding: 7px 12px; font-size: 14px; color: var(--slate-800); outline: none;
+      background: var(--surface);
+    }
+    #chainInput:focus { border-color: var(--indigo-500); box-shadow: 0 0 0 3px rgba(139,111,71,.15); }
+    #chainPreview {
+      font-size: 12px; color: var(--indigo-600); background: rgba(139,111,71,.08);
+      border-radius: 8px; padding: 4px 10px; white-space: nowrap;
+    }
+    #btnApplyChain  { padding: 8px 16px; font-size: 13px; }
+    #btnCancelChain { padding: 8px 14px; font-size: 13px; background: var(--surface); color: var(--slate-500); border: 1px solid var(--slate-200); border-radius: 10px; cursor: pointer; font-weight: 500; }
+    #btnCancelChain:hover { background: var(--slate-100); }
+
+    /* ── Info callout ── */
+    #info {
+      margin-top: 24px; border-radius: 16px;
+      border: 1px solid var(--indigo-100); background: rgba(253,245,235,.7);
+      padding: 20px 24px;
+    }
+    .info-title { font-size: 14px; font-weight: 600; color: var(--indigo-800); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .info-title svg { width: 16px; height: 16px; }
+    .info-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .info-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--indigo-700); }
+    .info-bullet { margin-top: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--indigo-400); flex-shrink: 0; }
+
+    /* ── Grid ── */
+    #grid { margin-top: 24px; display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media(min-width:640px)  { #grid { grid-template-columns: repeat(2,1fr); } }
+    @media(min-width:1024px) { #grid { grid-template-columns: repeat(3,1fr); } }
+    @media(min-width:1280px) { #grid { grid-template-columns: repeat(4,1fr); } }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface); border: 1.5px solid var(--slate-200);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      transition: box-shadow .2s, border-color .15s;
+      animation: fadeIn .25s ease;
+      position: relative;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+    .card.selected { border-color: var(--indigo-500); box-shadow: 0 0 0 3px rgba(139,111,71,.18); }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    /* Checkbox */
+    .card-checkbox {
+      position: absolute; top: 10px; left: 10px; z-index: 5;
+      width: 22px; height: 22px; border-radius: 7px;
+      border: 2px solid rgba(255,255,255,.9);
+      background: rgba(255,255,255,.75); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .15s; box-shadow: 0 1px 4px rgba(0,0,0,.2);
+    }
+    .card-checkbox:hover { border-color: var(--indigo-500); background: var(--surface); }
+    .card.selected .card-checkbox {
+      background: var(--indigo-600); border-color: var(--indigo-600);
+    }
+    .card-checkbox svg { width: 13px; height: 13px; color: white; display: none; }
+    .card.selected .card-checkbox svg { display: block; }
+
+    .card-thumb {
+      position: relative; height: 176px; background: var(--slate-100); overflow: hidden;
+    }
+    .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+    .card:hover .card-thumb img { transform: scale(1.05); }
+
+    .card-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.7); backdrop-filter: blur(4px);
+    }
+    .spinner { width: 32px; height: 32px; color: var(--indigo-500); animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .reduction-badge {
+      position: absolute; top: 8px; left: 8px;
+      background: var(--emerald-500); color: white;
+      border-radius: 99px; padding: 4px 10px;
+      font-size: 12px; font-weight: 700; box-shadow: 0 2px 6px rgba(0,0,0,.15);
+    }
+    /* Shift reduction badge right when selected (checkbox occupies top-left) */
+    .card.selected .reduction-badge { left: 40px; }
+
+    .remove-btn {
+      position: absolute; top: 8px; right: 8px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,.85); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--slate-500); opacity: 0; transition: opacity .2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .remove-btn svg { width: 14px; height: 14px; }
+    .card:hover .remove-btn { opacity: 1; }
+    .remove-btn:hover { background: var(--red-50); color: var(--red-500); }
+
+    .card-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .card-name-wrap { flex: 1; min-width: 0; }
+    .card-name {
+      font-size: 14px; font-weight: 500; color: var(--slate-800);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      cursor: text; border-radius: 6px; padding: 2px 4px; transition: background .15s;
+    }
+    .card-name:hover { background: var(--slate-100); }
+    .card-name-input {
+      display: none; width: 100%; font-size: 14px; font-weight: 500; color: var(--slate-800);
+      border: 1.5px solid var(--indigo-400); border-radius: 6px;
+      padding: 2px 6px; outline: none; background: var(--surface);
+    }
+    .rename-hint { font-size: 10px; color: var(--slate-400); margin-top: 2px; display: none; }
+
+    .status-badge { border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
+    .status-pending    { background: var(--slate-100); color: var(--slate-500); }
+    .status-processing { background: var(--amber-100); color: var(--amber-600); }
+    .status-done       { background: var(--emerald-100); color: var(--emerald-700); }
+    .status-skipped    { background: var(--blue-100); color: var(--blue-600); }
+    .status-error      { background: var(--red-100); color: var(--red-600); }
+
+    .card-sizes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .size-box { border-radius: 12px; padding: 10px; background: var(--slate-50); }
+    .size-box.result-done { background: var(--emerald-50); }
+    .size-label { font-size: 10px; text-transform: uppercase; letter-spacing:.05em; color: var(--slate-400); font-weight: 600; margin-bottom: 2px; }
+    .size-value { font-size: 13px; font-weight: 600; color: var(--slate-700); }
+    .size-value.green { color: var(--emerald-700); }
+    .size-value.blue  { color: var(--blue-600); }
+    .size-dim { font-size: 11px; color: var(--slate-400); margin-top: 1px; }
+
+    .error-msg { border-radius: 8px; background: var(--red-50); padding: 8px 12px; font-size: 12px; color: var(--red-600); }
+
+    .card-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .card-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 6px; border-radius: 12px; padding: 8px 0;
+      font-size: 13px; font-weight: 500; border: none; cursor: pointer;
+      transition: all .15s ease;
+    }
+    .card-btn:active { transform: scale(.96); }
+    .card-btn svg { width: 14px; height: 14px; }
+    .card-btn-indigo  { background: var(--indigo-600); color: white; }
+    .card-btn-indigo:hover  { background: var(--indigo-700); }
+    .card-btn-emerald { background: var(--emerald-600); color: white; }
+    .card-btn-emerald:hover { background: var(--emerald-700); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 64px; border-top: 1px solid var(--slate-200);
+      background: rgba(255,255,255,.6); padding: 24px;
+      text-align: center; font-size: 12px; color: var(--slate-400);
+    }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+  <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+<script>document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });</script>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ImagePress</h1>
+        <p>Compressor inteligente de imagens</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <a class="back-link" href="../index.html">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Voltar ao hub
+      </a>
+      <span class="badge-local">
+        <span class="badge-dot"></span>
+        Processamento local · sem upload
+      </span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Dropzone -->
+  <div id="dropzone">
+    <input id="fileInput" type="file" multiple accept="image/jpeg,image/jpg,image/png,image/webp" style="display:none">
+    <div class="dz-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+    </div>
+    <div class="dz-text">
+      <p id="dzLabel">Arraste suas imagens aqui</p>
+      <p>ou clique para selecionar — JPG, PNG, WEBP</p>
+    </div>
+    <div class="dz-hints">
+      <span class="dz-hint"><span class="dot-indigo"></span> Máx. 2 500 px</span>
+      <span class="dz-hint"><span class="dot-violet"></span> Máx. 1 024 KB</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div id="stats">
+    <div class="stat-card"><div class="stat-label">Total de imagens</div><div class="stat-value grad-indigo"  id="statTotal">0</div></div>
+    <div class="stat-card"><div class="stat-label">Comprimidas</div>     <div class="stat-value grad-emerald" id="statDone">0</div></div>
+    <div class="stat-card"><div class="stat-label">Sem alteração</div>   <div class="stat-value grad-blue"    id="statSkipped">0</div></div>
+    <div class="stat-card"><div class="stat-label">Espaço economizado</div><div class="stat-value grad-violet" id="statSaved">—</div></div>
+  </div>
+
+  <!-- Global actions -->
+  <div id="actions">
+    <button id="btnCompressAll" class="btn btn-indigo" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+        <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+      </svg>
+      Comprimir todas
+    </button>
+    <button id="btnDownloadAll" class="btn btn-emerald" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Baixar todas
+    </button>
+    <button id="btnChainRename" class="btn btn-violet" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+      </svg>
+      Renomear selecionadas (<span id="selCount">0</span>)
+    </button>
+    <div class="spacer"></div>
+    <button id="btnClearAll" class="btn btn-ghost">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+      Limpar tudo
+    </button>
+  </div>
+
+  <!-- Chain rename bar -->
+  <div id="chainBar">
+    <span class="chain-label">Nome base:</span>
+    <input id="chainInput" type="text" maxlength="100" placeholder="Ex: Ambiente">
+    <span id="chainPreview"></span>
+    <button id="btnApplyChain" class="btn btn-violet">Aplicar</button>
+    <button id="btnCancelChain">Cancelar</button>
+  </div>
+
+  <!-- Info callout -->
+  <div id="info">
+    <div class="info-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      Como funciona o filtro
+    </div>
+    <ul class="info-list">
+      <li><span class="info-bullet"></span>Imagens com <strong>mais de 1 024 KB</strong> ou <strong>maiores que 2 500 px</strong> serão comprimidas.</li>
+      <li><span class="info-bullet"></span>O tamanho alvo é <strong>≈ 1 000 KB</strong> — nunca vai chegar a 200–300 KB.</li>
+      <li><span class="info-bullet"></span>A resolução é reduzida para <strong>≈ 2 400 px</strong> no lado maior — nunca para 1 000 × 1 000.</li>
+      <li><span class="info-bullet"></span>Imagens já dentro dos limites são <strong>marcadas como "sem alteração"</strong> e podem ser baixadas normalmente.</li>
+      <li><span class="info-bullet"></span>Todo o processamento é feito <strong>localmente no seu navegador</strong> — nenhuma imagem é enviada.</li>
+      <li><span class="info-bullet"></span>Clique no <strong>nome do card</strong> para renomear individualmente. Marque o <strong>checkbox</strong> em vários cards e use <em>Renomear selecionadas</em> para renomear em cadeia.</li>
+    </ul>
+  </div>
+
+  <!-- Image grid -->
+  <div id="grid"></div>
+</main>
+
+<footer>ImagePress — processamento 100% local, privacidade garantida.</footer>
+
+<script>
+(function () {
+  // ─── Constants ────────────────────────────────────────────────────────────
+  const MAX_SIZE_BYTES   = 1024 * 1024;
+  const MAX_DIM          = 2500;
+  const TARGET_MAX_DIM   = 2400;
+  const MIN_FLOOR_DIM    = 1800;
+  const TARGET_SIZE_BYTES= 1000 * 1024;
+  const MIN_TARGET_BYTES = 750  * 1024;
+  const QUALITY_START    = 0.92;
+  const QUALITY_STEP     = 0.04;
+  const QUALITY_FLOOR    = 0.60;
+  const ACCEPTED         = ['image/jpeg','image/jpg','image/png','image/webp'];
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let items      = [];          // ImageFile[]
+  let selected   = new Set();  // ids
+  const processing = new Set();
+
+  // ─── DOM ──────────────────────────────────────────────────────────────────
+  const dropzone       = document.getElementById('dropzone');
+  const fileInput      = document.getElementById('fileInput');
+  const dzLabel        = document.getElementById('dzLabel');
+  const statsEl        = document.getElementById('stats');
+  const actionsEl      = document.getElementById('actions');
+  const infoEl         = document.getElementById('info');
+  const gridEl         = document.getElementById('grid');
+  const chainBar       = document.getElementById('chainBar');
+  const chainInput     = document.getElementById('chainInput');
+  const chainPreview   = document.getElementById('chainPreview');
+  const btnCompressAll = document.getElementById('btnCompressAll');
+  const btnDownloadAll = document.getElementById('btnDownloadAll');
+  const btnChainRename = document.getElementById('btnChainRename');
+  const selCountEl     = document.getElementById('selCount');
+  const btnApplyChain  = document.getElementById('btnApplyChain');
+  const btnCancelChain = document.getElementById('btnCancelChain');
+  const btnClearAll    = document.getElementById('btnClearAll');
+
+  // ─── Dropzone ─────────────────────────────────────────────────────────────
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); dzLabel.textContent = 'Solte as imagens aqui'; });
+  dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('drag-over'); dzLabel.textContent = 'Arraste suas imagens aqui'; });
+  dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('drag-over'); dzLabel.textContent = 'Arraste suas imagens aqui'; handleFiles(e.dataTransfer.files); });
+  fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+  // ─── Global actions ───────────────────────────────────────────────────────
+  btnCompressAll.addEventListener('click', compressAll);
+  btnDownloadAll.addEventListener('click', downloadAll);
+  btnClearAll.addEventListener('click', clearAll);
+
+  btnChainRename.addEventListener('click', () => {
+    chainBar.style.display = 'flex';
+    chainInput.value = '';
+    updatePreview();
+    chainInput.focus();
+  });
+  btnCancelChain.addEventListener('click', closeChainBar);
+  btnApplyChain.addEventListener('click', applyChain);
+  chainInput.addEventListener('input', updatePreview);
+  chainInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') applyChain();
+    if (e.key === 'Escape') closeChainBar();
+  });
+
+  // ─── Handle files ─────────────────────────────────────────────────────────
+  function handleFiles(fileList) {
+    const valid = Array.from(fileList).filter(f => ACCEPTED.includes(f.type));
+    if (!valid.length) return;
+
+    Promise.all(valid.map(file => new Promise(resolve => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, originalSize: file.size, originalWidth: img.naturalWidth, originalHeight: img.naturalHeight, previewUrl: url, status: 'pending', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null, errorMsg: null });
+      img.onerror = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, originalSize: file.size, originalWidth: 0, originalHeight: 0, previewUrl: url, status: 'error', errorMsg: 'Não foi possível carregar a imagem.', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null });
+      img.src = url;
+    }))).then(newItems => { items = [...items, ...newItems]; render(); });
+  }
+
+  // ─── Compression ──────────────────────────────────────────────────────────
+  function loadImage(src) { return new Promise((res,rej) => { const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=src; }); }
+
+  function calcDimensions(w, h) {
+    const max = Math.max(w, h);
+    if (max <= MAX_DIM) return { width: w, height: h };
+    const scale = TARGET_MAX_DIM / max;
+    let nw = Math.round(w * scale), nh = Math.round(h * scale);
+    const sm = Math.max(nw, nh);
+    if (sm < MIN_FLOOR_DIM) { const up = MIN_FLOOR_DIM / sm; nw = Math.round(nw*up); nh = Math.round(nh*up); }
+    return { width: nw, height: nh };
+  }
+
+  function canvasToBlob(canvas, mime, quality) { return new Promise((res,rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob null')), mime, quality)); }
+
+  async function compressImage(item) {
+    const img = await loadImage(item.previewUrl);
+    const needsDim = Math.max(img.naturalWidth, img.naturalHeight) > MAX_DIM;
+    const needsSize = item.originalSize > MAX_SIZE_BYTES;
+    if (!needsDim && !needsSize) return null;
+    const mime = (item.file.type === 'image/png' && !needsSize) ? 'image/png' : 'image/jpeg';
+    const { width: tw, height: th } = calcDimensions(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement('canvas');
+    canvas.width = tw; canvas.height = th;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, tw, th);
+    if (!needsSize) return { blob: await canvasToBlob(canvas, mime, QUALITY_START), width: tw, height: th };
+    let quality = QUALITY_START, blob = await canvasToBlob(canvas, mime, quality);
+    while (blob.size > TARGET_SIZE_BYTES && quality > QUALITY_FLOOR) {
+      quality = Math.max(quality - QUALITY_STEP, QUALITY_FLOOR);
+      blob = await canvasToBlob(canvas, mime, quality);
+      if (blob.size <= MIN_TARGET_BYTES) break;
+    }
+    return { blob, width: tw, height: th };
+  }
+
+  async function compressSingle(id) {
+    if (processing.has(id)) return;
+    processing.add(id);
+    const item = items.find(i => i.id === id);
+    if (!item) { processing.delete(id); return; }
+    item.status = 'processing'; render();
+    try {
+      const result = await compressImage(item);
+      if (!result) { item.status = 'skipped'; }
+      else {
+        const { blob, width, height } = result;
+        if (item.compressedUrl) URL.revokeObjectURL(item.compressedUrl);
+        Object.assign(item, { compressedBlob: blob, compressedUrl: URL.createObjectURL(blob), compressedSize: blob.size, compressedWidth: width, compressedHeight: height, status: 'done' });
+      }
+    } catch(err) { item.status = 'error'; item.errorMsg = err instanceof Error ? err.message : 'Erro ao comprimir.'; }
+    finally { processing.delete(id); render(); }
+  }
+
+  async function compressAll() {
+    const queue = items.filter(i => i.status==='pending'||i.status==='error').slice();
+    async function worker() { while (queue.length) await compressSingle(queue.shift().id); }
+    await Promise.all(Array.from({ length: Math.min(3, queue.length) }, worker));
+  }
+
+  // ─── Download ─────────────────────────────────────────────────────────────
+  function getFilename(item) {
+    const base = (item.customName || item.originalName).replace(/\.[^.]+$/, '');
+    const ext  = (item.compressedBlob && item.compressedBlob.type === 'image/png') ? 'png' : 'jpg';
+    return `${base}_comprimido.${ext}`;
+  }
+
+  function downloadItem(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const a = document.createElement('a');
+    if (item.status === 'done' && item.compressedBlob) { a.href = item.compressedUrl; a.download = getFilename(item); }
+    else if (item.status === 'skipped') { a.href = item.previewUrl; a.download = item.customName || item.originalName; }
+    else return;
+    a.click();
+  }
+
+  function downloadAll() {
+    items.filter(i => i.status==='done'||i.status==='skipped').forEach((item,idx) => setTimeout(() => downloadItem(item.id), idx*150));
+  }
+
+  // ─── Remove / Clear ───────────────────────────────────────────────────────
+  function removeItem(id) {
+    const item = items.find(i => i.id === id);
+    if (item) { URL.revokeObjectURL(item.previewUrl); if (item.compressedUrl) URL.revokeObjectURL(item.compressedUrl); }
+    items = items.filter(i => i.id !== id);
+    selected.delete(id);
+    render();
+  }
+
+  function clearAll() {
+    items.forEach(i => { URL.revokeObjectURL(i.previewUrl); if (i.compressedUrl) URL.revokeObjectURL(i.compressedUrl); });
+    items = []; selected.clear(); closeChainBar(); render();
+  }
+
+  // ─── Selection ────────────────────────────────────────────────────────────
+  function toggleSelect(id) {
+    if (selected.has(id)) selected.delete(id);
+    else selected.add(id);
+    // Update just the card's visual state without full re-render
+    const card = gridEl.querySelector(`[data-id="${id}"]`);
+    if (card) {
+      card.classList.toggle('selected', selected.has(id));
+      // Sync checkbox checkmark visibility
+      const cb = card.querySelector('.card-checkbox svg');
+      if (cb) cb.style.display = selected.has(id) ? 'block' : 'none';
+    }
+    updateSelectionUI();
+  }
+
+  function updateSelectionUI() {
+    const n = selected.size;
+    selCountEl.textContent = n;
+    btnChainRename.style.display = n >= 1 ? '' : 'none';
+    if (n === 0) closeChainBar();
+    else updatePreview();
+  }
+
+  // ─── Chain rename ─────────────────────────────────────────────────────────
+  function updatePreview() {
+    const base = chainInput.value.trim();
+    if (!base) { chainPreview.textContent = ''; return; }
+    const n = selected.size;
+    if (n === 1) chainPreview.textContent = `→ ${base} 1`;
+    else chainPreview.textContent = `→ ${base} 1, ${base} 2${n > 2 ? `, … ${base} ${n}` : ''}`;
+  }
+
+  function applyChain() {
+    const base = chainInput.value.trim();
+    if (!base) { chainInput.focus(); return; }
+    // Apply in the order they appear in the grid (items order)
+    const orderedIds = items.map(i => i.id).filter(id => selected.has(id));
+    orderedIds.forEach((id, idx) => {
+      const item = items.find(i => i.id === id);
+      if (item) item.customName = `${base} ${idx + 1}`;
+    });
+    selected.clear();
+    closeChainBar();
+    render();
+  }
+
+  function closeChainBar() {
+    chainBar.style.display = 'none';
+    chainInput.value = '';
+    chainPreview.textContent = '';
+  }
+
+  // ─── Inline rename ────────────────────────────────────────────────────────
+  function startRename(id, nameEl, inputEl, hintEl) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    inputEl.value = (item.customName || item.originalName).replace(/\.[^.]+$/, '');
+    nameEl.style.display = 'none'; inputEl.style.display = 'block'; hintEl.style.display = 'block';
+    inputEl.focus(); inputEl.select();
+  }
+
+  function commitRename(id, nameEl, inputEl, hintEl) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const val = inputEl.value.trim();
+    if (val) item.customName = val;
+    const display = item.customName || item.originalName;
+    nameEl.textContent = display; nameEl.title = display;
+    nameEl.style.display = ''; inputEl.style.display = 'none'; hintEl.style.display = 'none';
+  }
+
+  // ─── Utilities ────────────────────────────────────────────────────────────
+  function formatBytes(b) {
+    if (!b) return '0 B';
+    if (b < 1024) return b + ' B';
+    const kb = b/1024;
+    if (kb < 1024) return kb.toFixed(1) + ' KB';
+    return (kb/1024).toFixed(2) + ' MB';
+  }
+  function formatDim(w, h) { return `${w} × ${h} px`; }
+  function reductionPct(o, c) { return o ? Math.round(((o-c)/o)*100) : 0; }
+
+  const STATUS_MAP = {
+    pending:    { label: 'Aguardando',    cls: 'status-pending'    },
+    processing: { label: 'Processando…', cls: 'status-processing' },
+    done:       { label: 'Comprimido',    cls: 'status-done'       },
+    skipped:    { label: 'Sem alteração', cls: 'status-skipped'    },
+    error:      { label: 'Erro',          cls: 'status-error'      },
+  };
+
+  // ─── Build card ───────────────────────────────────────────────────────────
+  function buildCard(item) {
+    const div = document.createElement('div');
+    div.className = 'card' + (selected.has(item.id) ? ' selected' : '');
+    div.dataset.id = item.id;
+
+    const isDone       = item.status === 'done';
+    const isSkipped    = item.status === 'skipped';
+    const isPending    = item.status === 'pending';
+    const isProcessing = item.status === 'processing';
+    const isError      = item.status === 'error';
+    const reduction    = isDone && item.compressedSize != null ? reductionPct(item.originalSize, item.compressedSize) : null;
+    const thumbUrl     = isDone ? item.compressedUrl : item.previewUrl;
+    const displayName  = item.customName || item.originalName;
+    const { label, cls } = STATUS_MAP[item.status];
+    const isSel = selected.has(item.id);
+
+    div.innerHTML = `
+      <div class="card-checkbox" title="Selecionar para renomear em cadeia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:${isSel?'block':'none'}">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="card-thumb">
+        <img src="${thumbUrl}" alt="${displayName}" loading="lazy">
+        ${isProcessing ? `<div class="card-overlay"><svg class="spinner" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10" stroke-linecap="round"/></svg></div>` : ''}
+        ${isDone && reduction > 0 ? `<div class="reduction-badge">−${reduction}%</div>` : ''}
+        <button class="remove-btn" title="Remover">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="card-header">
+          <div class="card-name-wrap">
+            <div class="card-name" title="${displayName}">${displayName}</div>
+            <input class="card-name-input" type="text" maxlength="120" placeholder="Novo nome…">
+            <div class="rename-hint">Enter para salvar · Esc para cancelar</div>
+          </div>
+          <span class="status-badge ${cls}">${label}</span>
+        </div>
+        <div class="card-sizes">
+          <div class="size-box">
+            <div class="size-label">Original</div>
+            <div class="size-value">${formatBytes(item.originalSize)}</div>
+            <div class="size-dim">${formatDim(item.originalWidth, item.originalHeight)}</div>
+          </div>
+          <div class="size-box ${isDone ? 'result-done' : ''}">
+            <div class="size-label">Resultado</div>
+            ${isDone ? `<div class="size-value green">${formatBytes(item.compressedSize)}</div><div class="size-dim">${formatDim(item.compressedWidth, item.compressedHeight)}</div>`
+              : isSkipped ? `<div class="size-value blue">${formatBytes(item.originalSize)}</div><div class="size-dim">Dentro dos limites</div>`
+              : `<div class="size-value">—</div>`}
+          </div>
+        </div>
+        ${isError ? `<div class="error-msg">${item.errorMsg}</div>` : ''}
+        <div class="card-actions">
+          ${(isPending||isError) ? `<button class="card-btn card-btn-indigo compress-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>Comprimir</button>` : ''}
+          ${(isDone||isSkipped) ? `<button class="card-btn card-btn-emerald download-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar</button>` : ''}
+        </div>
+      </div>
+    `;
+
+    // Checkbox toggle
+    div.querySelector('.card-checkbox').addEventListener('click', e => { e.stopPropagation(); toggleSelect(item.id); });
+
+    // Remove
+    div.querySelector('.remove-btn').addEventListener('click', e => { e.stopPropagation(); removeItem(item.id); });
+
+    // Compress / Download
+    const compBtn = div.querySelector('.compress-btn');
+    if (compBtn) compBtn.addEventListener('click', () => compressSingle(item.id));
+    const dlBtn = div.querySelector('.download-btn');
+    if (dlBtn) dlBtn.addEventListener('click', () => downloadItem(item.id));
+
+    // Inline rename
+    const nameEl  = div.querySelector('.card-name');
+    const inputEl = div.querySelector('.card-name-input');
+    const hintEl  = div.querySelector('.rename-hint');
+    nameEl.addEventListener('click', () => startRename(item.id, nameEl, inputEl, hintEl));
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); commitRename(item.id, nameEl, inputEl, hintEl); }
+      if (e.key === 'Escape') { nameEl.style.display=''; inputEl.style.display='none'; hintEl.style.display='none'; }
+    });
+    inputEl.addEventListener('blur', () => commitRename(item.id, nameEl, inputEl, hintEl));
+
+    return div;
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function render() {
+    const hasItems = items.length > 0;
+    statsEl.style.display   = hasItems ? 'grid' : 'none';
+    actionsEl.style.display = hasItems ? 'flex'  : 'none';
+    infoEl.style.display    = hasItems ? 'none'  : '';
+
+    const hasPending      = items.some(i => i.status==='pending'||i.status==='error');
+    const hasDownloadable = items.some(i => i.status==='done'||i.status==='skipped');
+    const isProcessing    = items.some(i => i.status==='processing');
+
+    btnCompressAll.style.display = hasPending ? '' : 'none';
+    btnCompressAll.disabled = isProcessing;
+    btnCompressAll.innerHTML = isProcessing
+      ? `<svg class="spinner" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="10" stroke-linecap="round"/></svg> Processando…`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Comprimir todas`;
+    btnDownloadAll.style.display = hasDownloadable ? '' : 'none';
+
+    // Selection button
+    const n = selected.size;
+    selCountEl.textContent = n;
+    btnChainRename.style.display = n >= 1 ? '' : 'none';
+
+    // Stats
+    const done    = items.filter(i => i.status==='done').length;
+    const skipped = items.filter(i => i.status==='skipped').length;
+    const origTotal = items.reduce((s,i) => s + i.originalSize, 0);
+    const compTotal = items.reduce((s,i) => i.status==='done' && i.compressedSize!=null ? s+i.compressedSize : s+i.originalSize, 0);
+    const saved = origTotal - compTotal;
+    const savedPct = origTotal > 0 ? Math.round((saved/origTotal)*100) : 0;
+    document.getElementById('statTotal').textContent   = items.length;
+    document.getElementById('statDone').textContent    = done;
+    document.getElementById('statSkipped').textContent = skipped;
+    document.getElementById('statSaved').textContent   = saved > 0 ? `${formatBytes(saved)} (${savedPct}%)` : '—';
+
+    // Grid diff-update
+    Array.from(gridEl.children).forEach(el => { if (!items.find(i => i.id===el.dataset.id)) el.remove(); });
+    items.forEach((item, idx) => {
+      const existing = gridEl.querySelector(`[data-id="${item.id}"]`);
+      const newCard  = buildCard(item);
+      if (!existing) gridEl.insertBefore(newCard, gridEl.children[idx] || null);
+      else existing.replaceWith(newCard);
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

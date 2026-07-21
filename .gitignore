@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# VideoPress runtime data — generated locally, never needed in the repo
+video-compress/node_modules/
+video-compress/uploads/
+video-compress/outputs/
+video-compress/Comprimidos/
+video-compress/logs/
+video-compress/*.log
+
+# build output (leftover vite scaffold inside video-compress)
+video-compress/dist/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.swp
