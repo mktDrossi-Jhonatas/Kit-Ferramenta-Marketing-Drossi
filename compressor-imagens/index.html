@@ -267,7 +267,8 @@
     .card-name-wrap { flex: 1; min-width: 0; }
     .card-name {
       font-size: 14px; font-weight: 500; color: var(--slate-800);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+      overflow: hidden; line-height: 1.3;
       cursor: text; border-radius: 6px; padding: 2px 4px; transition: background .15s;
     }
     .card-name:hover { background: var(--slate-100); }
@@ -278,6 +279,9 @@
     }
     .rename-hint { font-size: 10px; color: var(--slate-400); margin-top: 2px; display: none; }
 
+    .bg-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 99px; padding: 3px 9px; font-size: 11px; font-weight: 600; width: fit-content; }
+    .bg-badge-infinito { background: var(--indigo-50); color: var(--indigo-700); }
+    .bg-badge-ambientada { background: var(--blue-50, var(--slate-100)); color: var(--slate-500); }
     .status-badge { border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 500; white-space: nowrap; flex-shrink: 0; }
     .status-pending    { background: var(--slate-100); color: var(--slate-500); }
     .status-processing { background: var(--amber-100); color: var(--amber-600); }
@@ -404,6 +408,10 @@
       </svg>
       Renomear selecionadas (<span id="selCount">0</span>)
     </button>
+    <label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--slate-500);cursor:pointer">
+      <input type="checkbox" id="autoDetectBg" checked style="accent-color:var(--indigo-600);width:15px;height:15px">
+      Detectar fundo infinito e renomear
+    </label>
     <div class="spacer"></div>
     <button id="btnClearAll" class="btn btn-ghost">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -439,6 +447,7 @@
       <li><span class="info-bullet"></span>Imagens já dentro dos limites são <strong>marcadas como "sem alteração"</strong> e podem ser baixadas normalmente.</li>
       <li><span class="info-bullet"></span>Todo o processamento é feito <strong>localmente no seu navegador</strong> — nenhuma imagem é enviada.</li>
       <li><span class="info-bullet"></span>Clique no <strong>nome do card</strong> para renomear individualmente. Marque o <strong>checkbox</strong> em vários cards e use <em>Renomear selecionadas</em> para renomear em cadeia.</li>
+      <li><span class="info-bullet"></span>Ao comprimir, a ferramenta detecta se a foto tem <strong>fundo infinito (branco)</strong> pelas bordas da imagem e renomeia automaticamente — as demais ficam como <strong>"Ambientada"</strong>. Renomeações manuais não são sobrescritas. Desative em <em>"Detectar fundo infinito e renomear"</em> se preferir.</li>
     </ul>
   </div>
 
@@ -485,6 +494,7 @@
   const btnApplyChain  = document.getElementById('btnApplyChain');
   const btnCancelChain = document.getElementById('btnCancelChain');
   const btnClearAll    = document.getElementById('btnClearAll');
+  const autoDetectBg   = document.getElementById('autoDetectBg');
 
   // ─── Dropzone ─────────────────────────────────────────────────────────────
   dropzone.addEventListener('click', () => fileInput.click());
@@ -520,8 +530,8 @@
     Promise.all(valid.map(file => new Promise(resolve => {
       const url = URL.createObjectURL(file);
       const img = new Image();
-      img.onload = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, originalSize: file.size, originalWidth: img.naturalWidth, originalHeight: img.naturalHeight, previewUrl: url, status: 'pending', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null, errorMsg: null });
-      img.onerror = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, originalSize: file.size, originalWidth: 0, originalHeight: 0, previewUrl: url, status: 'error', errorMsg: 'Não foi possível carregar a imagem.', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null });
+      img.onload = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, userRenamed: false, bgType: null, originalSize: file.size, originalWidth: img.naturalWidth, originalHeight: img.naturalHeight, previewUrl: url, status: 'pending', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null, errorMsg: null });
+      img.onerror = () => resolve({ id: crypto.randomUUID(), file, originalName: file.name, customName: null, userRenamed: false, bgType: null, originalSize: file.size, originalWidth: 0, originalHeight: 0, previewUrl: url, status: 'error', errorMsg: 'Não foi possível carregar a imagem.', compressedBlob: null, compressedUrl: null, compressedSize: null, compressedWidth: null, compressedHeight: null });
       img.src = url;
     }))).then(newItems => { items = [...items, ...newItems]; render(); });
   }
@@ -540,6 +550,47 @@
   }
 
   function canvasToBlob(canvas, mime, quality) { return new Promise((res,rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob null')), mime, quality)); }
+
+  // ─── Background detector ───────────────────────────────────────────────────
+  // Heuristic: downscale the photo and check whether a thin band around all
+  // four edges is uniformly white/neutral. Studio "infinite background" shots
+  // always have clean white margins at the true edges; lifestyle/environment
+  // photos essentially never do (walls, floors, furniture reach the border).
+  function detectBackgroundType(img) {
+    const SAMPLE = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = SAMPLE; canvas.height = SAMPLE;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, SAMPLE, SAMPLE);
+    const { data } = ctx.getImageData(0, 0, SAMPLE, SAMPLE);
+    const band = Math.max(2, Math.round(SAMPLE * 0.06));
+    let whiteCount = 0, total = 0;
+    for (let y = 0; y < SAMPLE; y++) {
+      for (let x = 0; x < SAMPLE; x++) {
+        if (!(x < band || x >= SAMPLE - band || y < band || y >= SAMPLE - band)) continue;
+        const i = (y * SAMPLE + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        total++;
+        const maxC = Math.max(r, g, b), minC = Math.min(r, g, b);
+        if (maxC > 235 && (maxC - minC) < 18) whiteCount++;
+      }
+    }
+    return (total && whiteCount / total > 0.9) ? 'infinito' : 'ambientada';
+  }
+
+  async function ensureBgDetected(item) {
+    if (!autoDetectBg.checked || item.bgType) return;
+    try {
+      const img = await loadImage(item.previewUrl);
+      item.bgType = detectBackgroundType(img);
+      if (!item.userRenamed) {
+        const label = item.bgType === 'infinito' ? 'Fundo Infinito' : 'Ambientada';
+        // Original filename is dropped entirely; number only added if the label collides with another item.
+        const count = items.filter(i => i !== item && i.bgType === item.bgType && !i.userRenamed).length;
+        item.customName = count === 0 ? label : `${label} ${count + 1}`;
+      }
+    } catch (_) {}
+  }
 
   async function compressImage(item) {
     const img = await loadImage(item.previewUrl);
@@ -570,6 +621,7 @@
     if (!item) { processing.delete(id); return; }
     item.status = 'processing'; render();
     try {
+      await ensureBgDetected(item);
       const result = await compressImage(item);
       if (!result) { item.status = 'skipped'; }
       else {
@@ -599,7 +651,11 @@
     if (!item) return;
     const a = document.createElement('a');
     if (item.status === 'done' && item.compressedBlob) { a.href = item.compressedUrl; a.download = getFilename(item); }
-    else if (item.status === 'skipped') { a.href = item.previewUrl; a.download = item.customName || item.originalName; }
+    else if (item.status === 'skipped') {
+      a.href = item.previewUrl;
+      const origExt = (item.originalName.match(/\.[^.]+$/) || ['.jpg'])[0];
+      a.download = item.customName ? `${item.customName}${origExt}` : item.originalName;
+    }
     else return;
     a.click();
   }
@@ -661,7 +717,7 @@
     const orderedIds = items.map(i => i.id).filter(id => selected.has(id));
     orderedIds.forEach((id, idx) => {
       const item = items.find(i => i.id === id);
-      if (item) item.customName = `${base} ${idx + 1}`;
+      if (item) { item.customName = `${base} ${idx + 1}`; item.userRenamed = true; }
     });
     selected.clear();
     closeChainBar();
@@ -687,7 +743,7 @@
     const item = items.find(i => i.id === id);
     if (!item) return;
     const val = inputEl.value.trim();
-    if (val) item.customName = val;
+    if (val) { item.customName = val; item.userRenamed = true; }
     const display = item.customName || item.originalName;
     nameEl.textContent = display; nameEl.title = display;
     nameEl.style.display = ''; inputEl.style.display = 'none'; hintEl.style.display = 'none';
@@ -754,6 +810,7 @@
           </div>
           <span class="status-badge ${cls}">${label}</span>
         </div>
+        ${item.bgType ? `<span class="bg-badge bg-badge-${item.bgType}">${item.bgType === 'infinito' ? '🖼️ Fundo infinito' : '🏠 Ambientada'}</span>` : ''}
         <div class="card-sizes">
           <div class="size-box">
             <div class="size-label">Original</div>
