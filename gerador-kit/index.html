@@ -36,6 +36,16 @@
   :root[data-theme="dark"] .adv-kit-btn.active, :root[data-theme="dark"] .layout-toggle-btn.active,
   :root[data-theme="dark"] .dl-btn-all-var:hover, :root[data-theme="dark"] .back-link:hover { background: #33291c; }
   :root[data-theme="dark"] .var-group-remove:hover { background: #3a201f; color: #e07a6a; }
+  :root[data-theme="dark"] .upload-area, :root[data-theme="dark"] .result-img-wrap,
+  :root[data-theme="dark"] .adv-gallery-item, :root[data-theme="dark"] .adv-add-more,
+  :root[data-theme="dark"] .var-img-item, :root[data-theme="dark"] .var-group,
+  :root[data-theme="dark"] .var-group-header, :root[data-theme="dark"] .var-upload-btn,
+  :root[data-theme="dark"] .slot, :root[data-theme="dark"] .slot.filled,
+  :root[data-theme="dark"] .picker-item img, :root[data-theme="dark"] .result-kit-img { background: #211b12; }
+  :root[data-theme="dark"] .upload-area:hover, :root[data-theme="dark"] .kit-btn.selected,
+  :root[data-theme="dark"] .btn-outline:hover, :root[data-theme="dark"] .adv-add-more:hover,
+  :root[data-theme="dark"] .var-upload-btn:hover, :root[data-theme="dark"] .add-variation-btn:hover,
+  :root[data-theme="dark"] .adv-kit-btn.active, :root[data-theme="dark"] .layout-toggle-btn.active { background: #33291c; }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -737,6 +747,7 @@
     flex-wrap: wrap;
   }
   .back-link {
+    position: fixed; top: 16px; left: 16px; z-index: 200;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -748,7 +759,7 @@
     border: 1px solid var(--border);
     border-radius: 20px;
     background: var(--surface);
-    margin-bottom: 24px;
+    box-shadow: 0 2px 10px var(--shadow);
     transition: all 0.15s;
   }
   .back-link:hover { color: var(--accent); border-color: var(--accent2); background: #fdf5eb; }
