@@ -54,8 +54,8 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
 .feat-head{display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:11px;color:var(--muted);font-weight:600}
 .feat-head .del{margin-left:auto;color:var(--faint);font-size:16px;line-height:1}.feat-head .del:hover{color:#e07a7a}
 .hint{font-size:10.5px;color:var(--faint);line-height:1.4;margin-top:8px}
-.stage-view{overflow:hidden;display:grid;place-items:center;background:radial-gradient(120% 120% at 50% 0%,#161618,#0b0b0c 60%);position:relative}
-.stage-scaler{transform-origin:center;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04)}
+.stage-view{overflow:hidden;background:radial-gradient(120% 120% at 50% 0%,#161618,#0b0b0c 60%);position:relative}
+.stage-scaler{position:absolute;transform-origin:top left;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04)}
 .stage{position:relative;overflow:hidden;background:#111;font-family:Inter,sans-serif;user-select:none}
 /* BG uses a real <img> for pixel-perfect export */
 .stage-bg{position:absolute;inset:0;overflow:hidden;z-index:0}
@@ -142,6 +142,8 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
 .e-cta{font-family:'Instrument Sans';font-weight:600;font-size:2.4em;margin-top:.3em}
 /* SPLIT */
 .b-band{position:absolute;left:0;right:0;bottom:0;padding:0 6%;display:flex;flex-direction:column;justify-content:center;z-index:3}
+.b-band-layer{z-index:2}
+.b-fold{position:absolute;z-index:4;background:linear-gradient(135deg,rgba(255,255,255,.4),rgba(0,0,0,.22));clip-path:polygon(0 0,100% 0,0 100%);filter:drop-shadow(-2px 3px 5px rgba(0,0,0,.35))}
 .b-eye{font-family:'Instrument Sans';font-weight:600;font-size:2em;letter-spacing:.16em;text-transform:uppercase;margin-bottom:.6em;opacity:.85}
 .b-head{font-family:'Instrument Sans';font-weight:600;line-height:1;letter-spacing:-.02em}
 .b-sub{font-weight:400;font-size:2.6em;margin-top:.35em;max-width:72%;line-height:1.3;opacity:.75}
@@ -216,14 +218,6 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <filter id="glassWarp" x="-20%" y="-20%" width="140%" height="140%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.011 0.018" numOctaves="2" seed="7" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </defs>
-</svg>
 <div class="app">
   <div class="topbar">
     <button class="btn panel-toggle" id="panelToggle" title="Abrir ajustes" aria-label="Abrir ajustes">☰</button>
@@ -245,6 +239,18 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
     <section class="stage-view" id="stageView">
       <div class="stage-scaler" id="scaler">
         <div class="stage" id="stage">
+          <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+            <defs>
+              <filter id="glassWarp" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.011 0.018" numOctaves="2" seed="7" result="n"/>
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+              </filter>
+              <clipPath id="bandClip" clipPathUnits="objectBoundingBox"><path id="bandClipPath" d="M0,0 L1,0 L1,1 L0,1 Z"/></clipPath>
+              <clipPath id="bandClip0" clipPathUnits="objectBoundingBox"><path id="bandClipPath0" d="M0,0 L1,0 L1,1 L0,1 Z"/></clipPath>
+              <clipPath id="bandClip1" clipPathUnits="objectBoundingBox"><path id="bandClipPath1" d="M0,0 L1,0 L1,1 L0,1 Z"/></clipPath>
+              <clipPath id="bandClip2" clipPathUnits="objectBoundingBox"><path id="bandClipPath2" d="M0,0 L1,0 L1,1 L0,1 Z"/></clipPath>
+            </defs>
+          </svg>
           <div class="stage-bg" id="stageBg"></div>
           <div class="stage-empty" id="stageEmpty">Arraste a foto do produto<br>ou clique em "Imagem"</div>
           <div class="grain" id="grain"></div>
@@ -272,6 +278,8 @@ const S={
  variationsEnabled:false,variations:[],
  blur:20,textScale:100,headScale:100,accentC:null,inkC:null,bandBgC:null,bandInkC:null,
  ctaStyle:'solid',orgIntensity:60,shadowInt:100,boldCaptions:false,
+ bandShape:'straight',bandShapeIntensity:50,bandHeight:27,bandLayerFreq:1.8,bandLayerMix:35,bandLayerPos:[0,8,16],
+ heroBadgeOn:true,heroTitleOn:true,heroSubOn:true,heroGlowOn:true,heroGlowIntensity:100,
  fx:{minimal:'scrim',spec:'scrim',hairline:'line',editorial:'glass',organic:'both',palette:'glass'},
  paletteTitle:'ESCOLHA SUA COR',paletteColors:[{id:1,label:'Cor 1',img:null}],
  paletteZoom:140,paletteCropX:50,paletteCropY:50,paletteCircle:6.4,paletteGap:0.8,
@@ -318,7 +326,17 @@ function controls(){
   if(T==='minimal')gTh.append(fld('Fundo do texto',seg([['scrim','Sombra'],['glass','Vidro'],['none','Nenhum']],S.fx.minimal,v=>{S.fx.minimal=v;render();})));
   if(T==='spec')gTh.append(fld('Fundo do texto',seg([['scrim','Sombra'],['glass','Vidro'],['none','Nenhum']],S.fx.spec,v=>{S.fx.spec=v;render();})));
   if(T==='hairline')gTh.append(fld('Rótulos',seg([['line','Linha'],['glass','Vidro']],S.fx.hairline,v=>{S.fx.hairline=v;render();})));
-  if(T==='split')gTh.append(fld('Cor da faixa',seg([['light','Clara'],['dark','Escura']],S.bandTone,v=>{S.bandTone=v;render();})));
+  if(T==='split'){
+    gTh.append(fld('Cor da faixa',seg([['light','Clara'],['dark','Escura']],S.bandTone,v=>{S.bandTone=v;render();})));
+    gTh.append(fld('Formato da faixa',seg([['straight','Reta'],['wave','Onda'],['organic','Orgânica'],['diagonal','Diagonal'],['layered','Camadas 3D'],['fold','Dobra']],S.bandShape,v=>{S.bandShape=v;render();controls();})));
+    if(S.bandShape!=='straight')gTh.append(sl('Intensidade do formato',S.bandShapeIntensity,10,100,v=>{S.bandShapeIntensity=v;render();}));
+    if(S.bandShape==='layered'){
+      gTh.append(sl('Frequência das ondas',S.bandLayerFreq,1,4,v=>{S.bandLayerFreq=v;render();},null,0.1));
+      gTh.append(sl('Mistura orgânica',S.bandLayerMix,0,100,v=>{S.bandLayerMix=v;render();}));
+      [0,1,2].forEach(i=>gTh.append(sl(`Posição · Camada ${i+1}`,S.bandLayerPos[i],-25,25,v=>{S.bandLayerPos[i]=v;render();})));
+    }
+    gTh.append(sl('Altura da faixa',S.bandHeight,18,45,v=>{S.bandHeight=v;render();}));
+  }
   if(T==='organic')gTh.append(fld('Tratamento',seg([['blobs','Luzes'],['scrim','Escurecer'],['both','Ambos']],S.fx.organic,v=>{S.fx.organic=v;render();controls();})));
   if(T==='palette')gTh.append(fld('Painel do menu',seg([['glass','Vidro'],['liquid','Liquid Glass'],['solid','Sólido']],S.fx.palette,v=>{S.fx.palette=v;render();})));
   if(T!=='split'&&T!=='palette')gTh.append(fld('Cor do texto',seg([['dark','Claro'],['light','Escuro']],S.scrimColor,v=>{S.scrimColor=v;render();})));
@@ -331,7 +349,16 @@ function controls(){
   c.append(gTh);
   if(T==='minimal'){const g=group('Conteúdo');g.append(tx('Sobretítulo','eyebrow'));g.append(tx('Título','headline',1));g.append(tx('Linha em destaque','accentLine'));g.append(tx('Subtítulo','subtitle',1));g.append(fld('Alinhamento',seg([['left','Esquerda'],['center','Centro']],S.align,v=>{S.align=v;render();})));c.append(g);}
   else if(T==='organic'){const g=group('Conteúdo');g.append(tx('Sobretítulo','eyebrow'));g.append(tx('Título','headline',1));g.append(tx('Subtítulo','subtitle',1));g.append(fld('Alinhamento',seg([['left','Esquerda'],['center','Centro']],S.align,v=>{S.align=v;render();})));c.append(g);}
-  else if(T==='aura'){const g=group('Conteúdo');g.append(tx('Selo (Liquid Glass)','eyebrow'));g.append(tx('Título grande','headline',1));g.append(tx('Subtítulo','subtitle',1));g.append(fld('Alinhamento',seg([['left','Esquerda'],['center','Centro']],S.align,v=>{S.align=v;render();})));c.append(g);}
+  else if(T==='aura'){
+    const g=group('Conteúdo');g.append(tx('Selo (Liquid Glass)','eyebrow'));g.append(tx('Título grande','headline',1));g.append(tx('Subtítulo','subtitle',1));g.append(fld('Alinhamento',seg([['left','Esquerda'],['center','Centro']],S.align,v=>{S.align=v;render();})));c.append(g);
+    const ge=group('Elementos');
+    ge.append(fld('Selo',seg([['on','Mostrar'],['off','Ocultar']],S.heroBadgeOn?'on':'off',v=>{S.heroBadgeOn=v==='on';render();})));
+    ge.append(fld('Título grande',seg([['on','Mostrar'],['off','Ocultar']],S.heroTitleOn?'on':'off',v=>{S.heroTitleOn=v==='on';render();})));
+    ge.append(fld('Subtítulo',seg([['on','Mostrar'],['off','Ocultar']],S.heroSubOn?'on':'off',v=>{S.heroSubOn=v==='on';render();})));
+    ge.append(fld('Luzes de fundo',seg([['on','Mostrar'],['off','Ocultar']],S.heroGlowOn?'on':'off',v=>{S.heroGlowOn=v==='on';render();controls();})));
+    if(S.heroGlowOn)ge.append(sl('Intensidade das luzes',S.heroGlowIntensity,0,200,v=>{S.heroGlowIntensity=v;render();}));
+    c.append(ge);
+  }
   else if(T==='spec'){const g=group('Conteúdo');g.append(tx('Sobretítulo','eyebrow'));g.append(tx('Número / spec','specNum'));g.append(tx('Legenda','subtitle',1));g.append(el('div','hint','Número forte: "2·1", "180°", "3". Os símbolos ·×| ganham a cor de acento.'));c.append(g);}
   else if(T==='hairline'){const g=group('Conteúdo');g.append(tx('Título (rodapé)','headline',1));g.append(el('div','hint','Arraste os pontos sobre a foto.'));c.append(g);c.append(feats(true));}
   else if(T==='editorial'){const g=group('Conteúdo');g.append(tx('Sobretítulo','overline'));g.append(tx('Nome do produto','name'));g.append(tx('Frase (itálico)','tagline',1));g.append(tx('CTA','cta'));
@@ -516,7 +543,7 @@ function bgApply(){
   stage.style.cursor=_pan?'grabbing':'grab';
 }
 
-function fit(){const[w,h]=RATIOS[S.ratio];const st=$('#stage');st.style.width=w+'px';st.style.height=h+'px';st.style.fontSize=(w/1080*10*S.textScale/100)+'px';const v=$('#stageView').getBoundingClientRect();const s=Math.min((v.width-64)/w,(v.height-64)/h);$('#scaler').style.transform=`scale(${s})`;}
+function fit(){const[w,h]=RATIOS[S.ratio];const st=$('#stage');st.style.width=w+'px';st.style.height=h+'px';st.style.fontSize=(w/1080*10*S.textScale/100)+'px';const v=$('#stageView').getBoundingClientRect();const s=Math.min((v.width-64)/w,(v.height-64)/h);const sc=$('#scaler');sc.style.left=((v.width-w*s)/2)+'px';sc.style.top=((v.height-h*s)/2)+'px';sc.style.transform=`scale(${s})`;}
 
 /* glass panel — uses background-image (blurred, so minor position diffs invisible) */
 function glass(rect,isLiquid){
@@ -588,10 +615,23 @@ function render(){
       ${ctaHtml(S.cta,A,panelInk)}</div></div>`;
   } else if(T==='split'){
     const light=S.bandTone==='light';const bbg=S.bandBgC||(light?t.band:t.darkBand);const bink=S.bandInkC||(light?t.bandInk:'#f4efe6');
-    h+=`<div class="b-band" style="height:27%;background:${bbg};color:${bink}">
-      ${S.eyebrow?`<div class="b-eye" style="color:${A}">${esc(S.eyebrow)}</div>`:''}
+    const content=`${S.eyebrow?`<div class="b-eye" style="color:${A}">${esc(S.eyebrow)}</div>`:''}
       <div class="b-head" style="font-size:${hs(HEAD.split)}">${nl(S.headline)}</div>
-      ${S.subtitle?`<div class="b-sub">${nl(S.subtitle)}</div>`:''}</div>`;
+      ${S.subtitle?`<div class="b-sub">${nl(S.subtitle)}</div>`:''}`;
+    if(S.bandShape==='layered'){
+      h+=buildLayeredBand(bbg,bink,content,S.bandHeight,S.bandShapeIntensity,S.bandLayerFreq,S.bandLayerMix,S.bandLayerPos);
+    } else if(S.bandShape==='fold'){
+      const clipD=bandClipPath('diagonal',S.bandShapeIntensity);
+      $('#bandClipPath').setAttribute('d',clipD);
+      const foldPct=8+(S.bandShapeIntensity/100)*9;
+      h+=`<div class="b-band" style="height:${S.bandHeight}%;background:${bbg};color:${bink};clip-path:url(#bandClip)">${content}</div>
+      <div class="b-fold" style="width:${foldPct}%;aspect-ratio:1;bottom:${S.bandHeight}%;right:0"></div>`;
+    } else {
+      const clipD=bandClipPath(S.bandShape,S.bandShapeIntensity);
+      const clip=clipD?' clip-path:url(#bandClip);':'';
+      if(clipD)$('#bandClipPath').setAttribute('d',clipD);
+      h+=`<div class="b-band" style="height:${S.bandHeight}%;background:${bbg};color:${bink};${clip}">${content}</div>`;
+    }
   } else if(T==='organic'){
     const mode=S.fx.organic||'both';
     if(mode==='blobs'||mode==='both'){
@@ -616,14 +656,17 @@ function render(){
       <div class="org-head" style="font-size:${hs(HEAD.organic)}">${nl(S.headline)}</div>
       ${S.subtitle?`<div class="org-sub">${nl(S.subtitle)}</div>`:''}</div>`;
   } else if(T==='aura'){
-    const glow1=hexRgba(A,.5),glow2=hexRgba(t.c1||A,.35);
-    h+=`<div class="aura-glow" style="background:radial-gradient(60% 55% at 50% 78%,${glow1},transparent 70%),radial-gradient(45% 40% at 78% 18%,${glow2},transparent 72%)"></div>`;
+    if(S.heroGlowOn){
+      const gi=S.heroGlowIntensity/100;
+      const glow1=hexRgba(A,.5*gi),glow2=hexRgba(t.c1||A,.35*gi);
+      h+=`<div class="aura-glow" style="background:radial-gradient(60% 55% at 50% 78%,${glow1},transparent 70%),radial-gradient(45% 40% at 78% 18%,${glow2},transparent 72%)"></div>`;
+    }
     const a3=S.scrim/100,col3=dark?'0,0,0':'255,255,255';
     h+=`<div style="position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,rgba(${col3},${.7*a3}),transparent 46%),linear-gradient(180deg,rgba(${col3},${.4*a3}),transparent 30%)"></div>`;
-    if(S.eyebrow)h+=`<div class="aura-badge lg-btn" style="--glow:${hexRgba(A,.3)}">${esc(S.eyebrow)}</div>`;
+    if(S.heroBadgeOn&&S.eyebrow)h+=`<div class="aura-badge lg-btn" style="--glow:${hexRgba(A,.3)}">${esc(S.eyebrow)}</div>`;
     h+=`<div class="aura-wrap ${S.align}">
-      <div class="aura-head" style="font-size:${hs(HEAD.aura)};background-image:linear-gradient(180deg,${ink} 0%,${hexRgba(A,1)} 130%)">${nl(S.headline)}</div>
-      ${S.subtitle?`<div class="aura-sub" style="color:${ink};opacity:.82;text-shadow:${legibility}">${nl(S.subtitle)}</div>`:''}</div>`;
+      ${S.heroTitleOn?`<div class="aura-head" style="font-size:${hs(HEAD.aura)};background-image:linear-gradient(180deg,${ink} 0%,${hexRgba(A,1)} 130%)">${nl(S.headline)}</div>`:''}
+      ${S.heroSubOn&&S.subtitle?`<div class="aura-sub" style="color:${ink};opacity:.82;text-shadow:${legibility}">${nl(S.subtitle)}</div>`:''}</div>`;
   } else if(T==='palette'){
     const style=S.fx.palette||'glass';
     const isLiquid=style==='liquid';
@@ -658,6 +701,53 @@ function fitEditorialPanel(){
   const avail=panel.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
   const need=inner.scrollHeight;
   if(need>avail&&need>0)inner.style.transform=`scale(${Math.max(.55,avail/need)})`;
+}
+/* Faixa (split) — gera o recorte da borda superior da faixa como um path SVG
+   em coordenadas relativas (0..1), independente do tamanho real do elemento. */
+function bandClipPath(shape,intensity){
+  if(shape==='straight')return null;
+  const amp=Math.max(0.02,Math.min(0.22,(intensity/100)*0.22));
+  const base=amp+0.02,n=90,pts=[];
+  const pt=(x,y)=>`${x.toFixed(4)},${Math.max(0,y).toFixed(4)}`;
+  if(shape==='wave'){
+    for(let i=0;i<=n;i++){const x=i/n;pts.push(pt(x,base+amp*Math.sin(x*2*2*Math.PI)));}
+  } else if(shape==='organic'){
+    for(let i=0;i<=n;i++){const x=i/n;pts.push(pt(x,base+amp*(0.65*Math.sin(x*2*Math.PI*1.4+0.6)+0.35*Math.sin(x*2*Math.PI*3.1+2.1))));}
+  } else if(shape==='diagonal'){
+    return`M0,${Math.max(0,base-amp*0.5).toFixed(4)} L1,${Math.max(0,base+amp*0.9).toFixed(4)} L1,1 L0,1 Z`;
+  }
+  return`M${pts[0]} L${pts.slice(1).join(' L')} L1,1 L0,1 Z`;
+}
+/* Faixa "Camadas 3D" — 3 ondas/orgânicas defasadas empilhadas, cada uma sólida (sem
+   transparência) com um tom levemente diferente + sombra própria, simulando papel
+   recortado em profundidade (estilo macOS/Apple). Padrão (onda ou orgânica) configurável. */
+function shade(hex,amt){
+  let c=(hex||'#c9a45c').replace('#','');if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const n=parseInt(c,16)||0;let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  const t=amt<0?0:255,p=Math.abs(amt)/100;
+  r=Math.round((t-r)*p+r);g=Math.round((t-g)*p+g);b=Math.round((t-b)*p+b);
+  return`rgb(${r},${g},${b})`;
+}
+function buildLayeredBand(bbg,bink,content,heightPct,intensity,freqBase,mixPct,posArr){
+  const amp=Math.max(0.02,Math.min(0.2,(intensity/100)*0.2));
+  const mix=Math.max(0,Math.min(1,mixPct/100));
+  const layers=[{freqMul:.85,phase:0,ampMul:1,tone:-14},{freqMul:1.05,phase:1.6,ampMul:.82,tone:-6},{freqMul:1.25,phase:3.1,ampMul:.62,tone:0}];
+  let out='';
+  layers.forEach((L,i)=>{
+    const pos=Math.max(-25,Math.min(25,(posArr&&posArr[i])||0))/100;
+    const a=amp*L.ampMul,base=Math.max(0.015,a+0.015+pos),n=90,pts=[],freq=freqBase*L.freqMul;
+    for(let k=0;k<=n;k++){
+      const x=k/n;
+      const wave=Math.sin(x*2*Math.PI*freq+L.phase);
+      const organic=0.65*Math.sin(x*2*Math.PI*freq*1.4+L.phase*0.6+0.6)+0.35*Math.sin(x*2*Math.PI*freq*3.1+L.phase*1.4);
+      const y=base+a*((1-mix)*wave+mix*organic);
+      pts.push(`${x.toFixed(4)},${Math.max(0,y).toFixed(4)}`);
+    }
+    $(`#bandClipPath${i}`).setAttribute('d',`M${pts[0]} L${pts.slice(1).join(' L')} L1,1 L0,1 Z`);
+    const isFront=i===layers.length-1;
+    out+=`<div class="b-band b-band-layer" style="height:${heightPct}%;background:${shade(bbg,L.tone)};color:${bink};clip-path:url(#bandClip${i});filter:drop-shadow(0 ${5+i*3}px ${8+i*4}px rgba(0,0,0,.24))">${isFront?content:''}</div>`;
+  });
+  return out;
 }
 function ctaHtml(text,accentColor,inkColor){
   if(!text)return'';
