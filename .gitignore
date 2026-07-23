@@ -12,6 +12,13 @@ video-compress/*.log
 # build output (leftover vite scaffold inside video-compress)
 video-compress/dist/
 
+# Gerador de Imagens IA — API key, runtime data and logs never go in the repo
+gerador-imagens-ia/node_modules/
+gerador-imagens-ia/.env
+gerador-imagens-ia/data/
+gerador-imagens-ia/logs/
+gerador-imagens-ia/library/
+
 # OS / editor junk
 .DS_Store
 Thumbs.db

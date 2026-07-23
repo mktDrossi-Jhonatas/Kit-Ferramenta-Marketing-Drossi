@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <script src="theme.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Troca de Cor e Textura — Gerador de Imagens IA</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0eb; --surface: #fff; --accent: #8b6f47; --accent2: #c4a882;
+      --text: #2c2417; --muted: #9b8e82; --border: #e8ddd4; --shadow: rgba(139,111,71,0.12);
+      --success: #4a7c59; --success-bg: #eef6f1; --danger: #c0392b; --danger-bg: #fdf2f0;
+      --hover-tint: #f5ede2; --hover-tint2: #fdf5eb; --btn-hover: #7a5e38;
+    }
+    :root[data-theme="dark"] {
+      --bg: #1c1712; --surface: #262019; --accent: #d9b26e; --accent2: #a9855a;
+      --text: #f0e9df; --muted: #a89a89; --border: #3a3226; --shadow: rgba(0,0,0,0.35);
+      --success: #7fc496; --success-bg: #1e2f24; --danger: #e07a6a; --danger-bg: #3a201f;
+      --hover-tint: #33291c; --hover-tint2: #33291c; --btn-hover: #e6c384;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; padding: 40px 20px; transition: background-color .25s ease, color .25s ease; }
+    button,input,select,textarea { font-family: inherit; }
+    .max-w { max-width: 620px; margin: 0 auto; }
+
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+    .theme-toggle:hover { border-color: var(--accent2); color: var(--accent); transform: translateY(-1px) rotate(15deg); }
+    .theme-toggle svg { display: block; }
+    .theme-toggle .i-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-moon { display: block; }
+
+    .back-link { position: fixed; top: 16px; left: 16px; z-index: 200; display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent2); background: var(--hover-tint); }
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 1.9rem; text-align: center; margin-bottom: 6px; }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.88rem; margin-bottom: 8px; }
+    .badge-row { display: flex; justify-content: center; margin-bottom: 28px; }
+    .badge-local { display: inline-flex; align-items: center; gap: 7px; background: var(--hover-tint2); border: 1px solid var(--accent2); color: var(--accent); padding: 5px 13px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+
+    .usage-row { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 22px; }
+    #usage-text { font-size: 0.76rem; color: var(--muted); }
+    #usage-text strong { color: var(--text); }
+    #usage-text.over { color: var(--danger); }
+    .usage-bar-wrap { width: 160px; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+    .usage-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .2s; }
+    .usage-bar-fill.over { background: var(--danger); }
+
+    .card { background: var(--surface); border-radius: 16px; padding: 26px; box-shadow: 0 4px 24px var(--shadow); margin-bottom: 20px; }
+
+    .field-label { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 8px; display: block; }
+    .field-hint { font-size: 0.72rem; color: var(--muted); margin-bottom: 10px; }
+    .field-group { margin-bottom: 22px; }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .upload-area { border: 2px dashed var(--accent2); border-radius: 12px; padding: 26px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: var(--hover-tint2); }
+    .upload-area.small { padding: 18px; }
+    .upload-area:hover, .upload-area.drag-over { background: var(--hover-tint); border-color: var(--accent); }
+    .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .upload-text { color: var(--muted); font-size: 0.82rem; }
+    .upload-text strong { color: var(--accent); }
+
+    .mini-preview { margin-top: 10px; display: none; position: relative; }
+    .mini-preview img { width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; border: 1px solid var(--border); background: var(--hover-tint2); }
+    .clear-btn { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.55); border: none; color: #fff; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
+
+    textarea.text-input { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--hover-tint2); color: var(--text); padding: 12px 14px; font-size: 0.88rem; resize: vertical; min-height: 76px; }
+    textarea.text-input:focus { outline: none; border-color: var(--accent2); background: var(--surface); }
+
+    .btn { width: 100%; padding: 14px 20px; border: none; border-radius: 12px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; margin-top: 16px; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--btn-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { background: var(--muted); cursor: not-allowed; opacity: 0.6; }
+    .btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+    .btn-outline:hover { background: var(--hover-tint2); }
+
+    .progress-wrap { display: none; margin-top: 18px; text-align: center; }
+    .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .9s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-label { color: var(--muted); font-size: 0.85rem; }
+    .progress-hint { color: var(--muted); font-size: 0.72rem; margin-top: 4px; }
+
+    .result-wrap { display: none; margin-top: 18px; }
+    .result-img { width: 100%; border-radius: 10px; border: 1px solid var(--border); display: block; cursor: zoom-in; }
+    .result-meta { text-align: center; font-size: 0.78rem; color: var(--muted); margin: 10px 0 4px; }
+
+    .msg { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; margin-top: 16px; display: none; }
+    .msg.error { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); display: block; }
+    .msg.success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+
+    .credit-note { text-align: center; font-size: 0.72rem; color: var(--muted); margin-top: 18px; }
+
+    .gallery-card { display: none; }
+    .gallery-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .gallery-head h2 { font-family: 'Playfair Display', serif; font-size: 1.05rem; }
+    .gallery-head span { font-size: 0.72rem; color: var(--muted); }
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+    .gallery-thumb { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--hover-tint2); cursor: pointer; }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-thumb a.dl { position: absolute; bottom: 6px; right: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.95rem; border-radius: 50%; text-decoration: none; opacity: 0.9; transition: all .15s; }
+    .gallery-thumb a.dl:hover { opacity: 1; background: rgba(0,0,0,0.75); transform: scale(1.08); }
+    .gallery-thumb::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background .15s; }
+    .gallery-thumb:hover::after { background: rgba(0,0,0,0.12); }
+
+    .lightbox { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(10,8,5,0.88); align-items: center; justify-content: center; padding: 60px 20px; }
+    .lightbox.open { display: flex; }
+    .lightbox-img-wrap { position: relative; max-width: 900px; width: 100%; text-align: center; }
+    .lightbox-img-scroll { max-height: 78vh; overflow: hidden; border-radius: 10px; touch-action: none; }
+    .lightbox img { max-width: 100%; max-height: 78vh; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: block; margin: 0 auto; cursor: zoom-in; user-select: none; -webkit-user-drag: none; }
+    .lightbox-close { position: absolute; top: 16px; right: 16px; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(255,255,255,0.12); color: #fff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .lightbox-close:hover { background: rgba(255,255,255,0.22); }
+    .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(255,255,255,0.12); color: #fff; font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.22); }
+    .lightbox-nav:disabled { opacity: 0.25; cursor: default; }
+    .lightbox-nav.prev { left: -56px; }
+    .lightbox-nav.next { right: -56px; }
+    @media (max-width: 720px) { .lightbox-nav.prev { left: 4px; } .lightbox-nav.next { right: 4px; } }
+    .lightbox-dl { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 9px 18px; border-radius: 20px; background: var(--accent); color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
+    .lightbox-dl:hover { background: var(--btn-hover); }
+    .lightbox-count { color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-top: 8px; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+  <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+<script>document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });</script>
+<a class="back-link" href="catalogo.html">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Voltar ao catálogo
+</a>
+
+<div class="max-w">
+  <h1>Troca de Cor e Textura</h1>
+  <p class="subtitle">Processamento via Magnific — roda no PC do servidor</p>
+  <div class="badge-row">
+    <span class="badge-local"><span class="badge-dot"></span> Rede local · <a href="logs.html" style="color:inherit;text-decoration:underline">ver logs e créditos</a></span>
+  </div>
+  <div class="usage-row" id="usage-row" style="display:none">
+    <span id="usage-text"></span>
+    <div class="usage-bar-wrap"><div class="usage-bar-fill" id="usage-bar-fill"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="field-group">
+      <span class="field-label">1. Cor / textura de referência</span>
+      <span class="field-hint">A imagem com a cor ou material que você quer aplicar.</span>
+      <div class="upload-area small" id="upload-cor">
+        <input type="file" id="file-cor" accept="image/*">
+        <div class="upload-icon">🎨</div>
+        <div class="upload-text"><strong>Clique ou arraste</strong> a imagem aqui</div>
+      </div>
+      <div class="mini-preview" id="preview-cor-wrap">
+        <img id="preview-cor" src="" alt="Preview cor">
+        <button class="clear-btn" onclick="clearSlot('cor')">×</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <span class="field-label">2. Produto (foto original)</span>
+      <span class="field-hint">A foto do móvel/produto que vai receber a nova cor ou textura.</span>
+      <div class="upload-area small" id="upload-produto">
+        <input type="file" id="file-produto" accept="image/*">
+        <div class="upload-icon">🛋️</div>
+        <div class="upload-text"><strong>Clique ou arraste</strong> a imagem aqui</div>
+      </div>
+      <div class="mini-preview" id="preview-produto-wrap">
+        <img id="preview-produto" src="" alt="Preview produto">
+        <button class="clear-btn" onclick="clearSlot('produto')">×</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-generate" onclick="generate()" disabled>Gerar imagem ▶</button>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="spinner"></div>
+      <div class="progress-label" id="progress-label">Enviando…</div>
+      <div class="progress-hint">Gerações via IA podem levar de alguns segundos a alguns minutos.</div>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <div class="result-wrap" id="result-wrap">
+      <img class="result-img" id="result-img" src="" alt="Resultado">
+      <div class="result-meta" id="result-meta"></div>
+      <button class="btn btn-primary" id="btn-download" onclick="downloadResult()">⬇ Baixar imagem</button>
+      <button class="btn btn-outline" onclick="resetAll()">Gerar outra</button>
+    </div>
+  </div>
+
+  <div class="card gallery-card" id="gallery-card">
+    <div class="gallery-head">
+      <h2>Suas criações</h2>
+      <span id="gallery-count"></span>
+    </div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </div>
+
+  <p class="credit-note">Cada geração consome créditos da conta Magnific. O uso por IP é registrado e pode ser limitado na aba de logs.</p>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">×</button>
+  <div class="lightbox-img-wrap">
+    <button class="lightbox-nav prev" id="lightboxPrev">‹</button>
+    <div class="lightbox-img-scroll" id="lightboxImgScroll"><img id="lightboxImg" src="" alt="Prévia"></div>
+    <button class="lightbox-nav next" id="lightboxNext">›</button>
+    <div><a class="lightbox-dl" id="lightboxDl" download>⬇ Baixar imagem</a></div>
+    <div class="lightbox-count" id="lightboxCount"></div>
+  </div>
+</div>
+
+<script>
+  const FLOW = 'cor_textura';
+  const btnGenerate = document.getElementById('btn-generate');
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressLabel = document.getElementById('progress-label');
+  const msgEl = document.getElementById('msg');
+  const resultWrap = document.getElementById('result-wrap');
+  const resultImg = document.getElementById('result-img');
+  const resultMeta = document.getElementById('result-meta');
+  const slots = {
+    cor: { dataUrl: null, upload: document.getElementById('upload-cor'), input: document.getElementById('file-cor'), previewWrap: document.getElementById('preview-cor-wrap'), previewImg: document.getElementById('preview-cor') },
+    produto: { dataUrl: null, upload: document.getElementById('upload-produto'), input: document.getElementById('file-produto'), previewWrap: document.getElementById('preview-produto-wrap'), previewImg: document.getElementById('preview-produto') },
+  };
+
+  let resultUrl = null;
+  let resultBlob = null;
+
+  const usageRow = document.getElementById('usage-row');
+  const usageText = document.getElementById('usage-text');
+  const usageBarFill = document.getElementById('usage-bar-fill');
+
+  function updateUsage(u) {
+    if (!u) return;
+    const runs = u.usedRuns || 0;
+    const credits = u.usedCredits || 0;
+    const limitRuns = u.limit != null ? Math.floor(u.limit / (u.costPerRun || 87)) : null;
+    usageRow.style.display = 'flex';
+    const over = u.limit != null && credits >= u.limit;
+    usageText.innerHTML = limitRuns != null
+      ? `Você já gerou <strong>${runs}</strong> imagem(ns) · <strong>${credits}</strong> créditos usados de <strong>${u.limit}</strong> (${limitRuns} gerações)`
+      : `Você já gerou <strong>${runs}</strong> imagem(ns) · <strong>${credits}</strong> créditos usados`;
+    usageText.classList.toggle('over', over);
+    usageBarFill.classList.toggle('over', over);
+    usageBarFill.style.width = u.limit != null ? Math.min(100, Math.round(credits / u.limit * 100)) + '%' : '0%';
+  }
+
+  async function refreshUsage() {
+    try {
+      const res = await fetch('/credits/me');
+      const data = await res.json();
+      if (data.ok) updateUsage(data);
+    } catch (_) { /* best-effort */ }
+  }
+  refreshUsage();
+
+  function checkReady() {
+    btnGenerate.disabled = !(slots.cor.dataUrl && slots.produto.dataUrl);
+  }
+
+  Object.entries(slots).forEach(([key, slot]) => {
+    slot.input.addEventListener('change', e => { if (e.target.files[0]) loadSlotImage(key, e.target.files[0]); });
+    slot.upload.addEventListener('dragover', e => { e.preventDefault(); slot.upload.classList.add('drag-over'); });
+    slot.upload.addEventListener('dragleave', () => slot.upload.classList.remove('drag-over'));
+    slot.upload.addEventListener('drop', e => {
+      e.preventDefault(); slot.upload.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) loadSlotImage(key, e.dataTransfer.files[0]);
+    });
+  });
+
+  function loadSlotImage(key, file) {
+    const slot = slots[key];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      slot.dataUrl = ev.target.result;
+      slot.previewImg.src = slot.dataUrl;
+      slot.previewWrap.style.display = 'block';
+      slot.upload.style.display = 'none';
+      hideMsg();
+      checkReady();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearSlot(key) {
+    const slot = slots[key];
+    slot.dataUrl = null;
+    slot.previewWrap.style.display = 'none';
+    slot.upload.style.display = 'block';
+    slot.previewImg.src = '';
+    slot.input.value = '';
+    checkReady();
+  }
+
+  function showMsg(text, type) {
+    msgEl.textContent = text;
+    msgEl.className = 'msg ' + type;
+    msgEl.style.display = 'block';
+  }
+  function hideMsg() { msgEl.style.display = 'none'; }
+
+  function tick() { return new Promise(r => setTimeout(r, 40)); }
+
+  async function generate() {
+    if (!slots.cor.dataUrl || !slots.produto.dataUrl) return;
+    hideMsg();
+    resultWrap.style.display = 'none';
+    btnGenerate.disabled = true;
+    progressWrap.style.display = 'block';
+    progressLabel.textContent = 'Enviando…';
+    await tick();
+
+    try {
+      const inputs = {
+        cor_2: [slots.cor.dataUrl],
+        produto_referencia_2: [slots.produto.dataUrl],
+      };
+      const res = await fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flow: FLOW, inputs })
+      });
+      const data = await res.json();
+      if (data.usedCredits != null) updateUsage(data);
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message || data.error || 'Falha ao iniciar a geração.');
+      }
+      if (!data.runId) {
+        throw new Error(data.warning || 'Geração iniciada, mas não recebi um ID de acompanhamento. Confira o painel do Magnific.');
+      }
+      progressLabel.textContent = 'Gerando…';
+      await pollStatus(data.runId);
+    } catch (err) {
+      progressWrap.style.display = 'none';
+      showMsg(err.message || String(err), 'error');
+      checkReady();
+    }
+  }
+
+  async function pollStatus(runId) {
+    const started = Date.now();
+    let failStreak = 0;
+    while (true) {
+      await new Promise(r => setTimeout(r, 3000));
+      let res, data;
+      try {
+        res = await fetch('/status/' + runId);
+        data = await res.json();
+      } catch (_) {
+        data = { ok: false };
+      }
+      if (!res || !res.ok || !data.ok) {
+        failStreak++;
+        if (failStreak >= 5) throw new Error((data && (data.message || data.error)) || 'Falha ao consultar status.');
+        const elapsed = Math.round((Date.now() - started) / 1000);
+        progressLabel.textContent = `Gerando… (${elapsed}s, verificando novamente…)`;
+        continue;
+      }
+      failStreak = 0;
+      const status = (data.status || '').toLowerCase();
+      if (status === 'completed' || status === 'succeeded' || status === 'success') {
+        const url = extractResultUrl(data);
+        if (!url) throw new Error('A geração terminou mas nenhuma imagem foi retornada.');
+        await finalizeResult(url, runId);
+        return;
+      }
+      if (status === 'failed' || status === 'error') {
+        throw new Error(data.error_message || 'A geração falhou no Magnific.');
+      }
+      const elapsed = Math.round((Date.now() - started) / 1000);
+      progressLabel.textContent = `Gerando… (${elapsed}s)`;
+      if (elapsed > 300) throw new Error('Tempo limite de geração excedido.');
+    }
+  }
+
+  function extractResultUrl(data) {
+    if (data.result?.images?.[0]?.url) return data.result.images[0].url;
+    if (data.result?.videos?.[0]?.url) return data.result.videos[0].url;
+    if (data.output && typeof data.output === 'string') return data.output;
+    if (Array.isArray(data.output) && data.output[0]) return data.output[0].url || data.output[0];
+    if (data.outputs && Array.isArray(data.outputs) && data.outputs[0]) return data.outputs[0].url || data.outputs[0];
+    if (data.result_url) return data.result_url;
+    if (data.url) return data.url;
+    return null;
+  }
+
+  // ── Mesmo esquema de redimensionamento/compressão do ImagePress ──
+  const MAX_DIM = 2500;
+  const TARGET_MAX_DIM = 2400;
+  const MIN_FLOOR_DIM = 1800;
+  const TARGET_SIZE_BYTES = 1000 * 1024;
+  const MIN_TARGET_BYTES = 750 * 1024;
+  const QUALITY_START = 0.92;
+  const QUALITY_STEP = 0.04;
+  const QUALITY_FLOOR = 0.60;
+
+  function calcDimensions(w, h) {
+    const max = Math.max(w, h);
+    if (max <= MAX_DIM) return { width: w, height: h };
+    const scale = TARGET_MAX_DIM / max;
+    let nw = Math.round(w * scale), nh = Math.round(h * scale);
+    const sm = Math.max(nw, nh);
+    if (sm < MIN_FLOOR_DIM) { const up = MIN_FLOOR_DIM / sm; nw = Math.round(nw * up); nh = Math.round(nh * up); }
+    return { width: nw, height: nh };
+  }
+  function canvasToBlob(canvas, mime, quality) { return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob null')), mime, quality)); }
+  function loadImageEl(src) { return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = src; }); }
+  function blobToDataUrl(blob) { return new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(blob); }); }
+
+  async function finalizeResult(rawUrl, runId) {
+    progressLabel.textContent = 'Otimizando…';
+    try {
+      const img = await loadImageEl('/proxy-image?url=' + encodeURIComponent(rawUrl));
+      const { width: tw, height: th } = calcDimensions(img.naturalWidth, img.naturalHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = tw; canvas.height = th;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, tw, th);
+      let quality = QUALITY_START, blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+      while (blob.size > TARGET_SIZE_BYTES && quality > QUALITY_FLOOR) {
+        quality = Math.max(quality - QUALITY_STEP, QUALITY_FLOOR);
+        blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+        if (blob.size <= MIN_TARGET_BYTES) break;
+      }
+      resultBlob = blob;
+      resultUrl = URL.createObjectURL(blob);
+      resultImg.src = resultUrl;
+      resultMeta.textContent = `Pronto ✓ · ${tw}×${th}px · ${Math.round(blob.size / 1024)} KB`;
+      progressWrap.style.display = 'none';
+      resultWrap.style.display = 'block';
+      showMsg('Imagem gerada com sucesso.', 'success');
+      saveToLibrary(blob, runId, tw, th).then(refreshGallery);
+    } catch (err) {
+      console.error(err);
+      resultBlob = null;
+      resultUrl = rawUrl;
+      resultImg.src = rawUrl;
+      resultMeta.textContent = 'Pronto ✓ (não otimizado)';
+      progressWrap.style.display = 'none';
+      resultWrap.style.display = 'block';
+      showMsg('Gerou, mas não consegui otimizar a imagem automaticamente — o download sairá no tamanho original.', 'error');
+    }
+  }
+
+  async function saveToLibrary(blob, runId, width, height) {
+    try {
+      const imageDataUrl = await blobToDataUrl(blob);
+      await fetch('/save-result', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl, runId, width, height, flow: FLOW })
+      });
+    } catch (_) { /* best-effort */ }
+  }
+
+  function downloadResult() {
+    if (!resultUrl) return;
+    const a = document.createElement('a');
+    a.href = resultUrl;
+    a.download = 'gerado_' + Date.now() + (resultBlob ? '.jpg' : '.png');
+    if (!resultBlob) a.target = '_blank';
+    a.click();
+  }
+
+  function resetAll() {
+    clearSlot('cor');
+    clearSlot('produto');
+    resultWrap.style.display = 'none';
+    hideMsg();
+  }
+
+  // ── Galeria própria (por IP + flow) ──
+  const galleryCard = document.getElementById('gallery-card');
+  const galleryGrid = document.getElementById('gallery-grid');
+  const galleryCount = document.getElementById('gallery-count');
+  let galleryFiles = [];
+
+  async function refreshGallery() {
+    try {
+      const res = await fetch('/library/me?flow=' + FLOW);
+      const data = await res.json();
+      if (!data.ok) return;
+      galleryFiles = data.files || [];
+      if (!galleryFiles.length) { galleryCard.style.display = 'none'; return; }
+      galleryCard.style.display = 'block';
+      galleryCount.textContent = galleryFiles.length + (galleryFiles.length === 1 ? ' imagem' : ' imagens');
+      galleryGrid.innerHTML = galleryFiles.map((f, i) => `
+        <div class="gallery-thumb" data-idx="${i}">
+          <img src="${f.url}" alt="Gerada" loading="lazy">
+          <a class="dl" href="${f.url}" download title="Baixar" onclick="event.stopPropagation()">⬇</a>
+        </div>
+      `).join('');
+      galleryGrid.querySelectorAll('.gallery-thumb').forEach(el => {
+        el.addEventListener('click', () => openLightbox(Number(el.dataset.idx)));
+      });
+    } catch (_) { /* best-effort */ }
+  }
+  refreshGallery();
+
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxImgScroll = document.getElementById('lightboxImgScroll');
+  const lightboxDl = document.getElementById('lightboxDl');
+  const lightboxCount = document.getElementById('lightboxCount');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+  let lightboxIdx = 0;
+  let lightboxSingleUrl = null;
+
+  function openLightbox(idx) {
+    lightboxSingleUrl = null;
+    lightboxIdx = idx;
+    renderLightbox();
+    lightbox.classList.add('open');
+  }
+  function openLightboxUrl(url) {
+    lightboxSingleUrl = url;
+    renderLightbox();
+    lightbox.classList.add('open');
+  }
+  function renderLightbox() {
+    resetZoom();
+    if (lightboxSingleUrl) {
+      lightboxImg.src = lightboxSingleUrl;
+      lightboxDl.href = lightboxSingleUrl;
+      lightboxCount.textContent = '';
+      lightboxPrev.disabled = true;
+      lightboxNext.disabled = true;
+      return;
+    }
+    const f = galleryFiles[lightboxIdx];
+    if (!f) return;
+    lightboxImg.src = f.url;
+    lightboxDl.href = f.url;
+    lightboxCount.textContent = (lightboxIdx + 1) + ' de ' + galleryFiles.length;
+    lightboxPrev.disabled = lightboxIdx <= 0;
+    lightboxNext.disabled = lightboxIdx >= galleryFiles.length - 1;
+  }
+  function closeLightbox() { lightbox.classList.remove('open'); resetZoom(); }
+
+  // ── Zoom dinâmico (scroll) + arrastar (clique e segurar) ──
+  const MIN_SCALE = 1, MAX_SCALE = 5;
+  let scale = 1, panX = 0, panY = 0;
+  let isDragging = false, dragMoved = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+  function applyTransform() {
+    lightboxImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    lightboxImg.style.cursor = scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in';
+  }
+  function resetZoom() { scale = 1; panX = 0; panY = 0; applyTransform(); }
+
+  lightboxImgScroll.addEventListener('wheel', e => {
+    e.preventDefault();
+    const delta = -e.deltaY * 0.0018;
+    let next = scale * (1 + delta);
+    next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, next));
+    if (next <= 1.001) { scale = 1; panX = 0; panY = 0; } else { scale = next; }
+    applyTransform();
+  }, { passive: false });
+
+  function dragStart(x, y) {
+    if (scale <= 1) return;
+    isDragging = true; dragMoved = false;
+    dragStartX = x; dragStartY = y; panStartX = panX; panStartY = panY;
+    applyTransform();
+  }
+  function dragMove(x, y) {
+    if (!isDragging) return;
+    const dx = x - dragStartX, dy = y - dragStartY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+    panX = panStartX + dx; panY = panStartY + dy;
+    applyTransform();
+  }
+  function dragEnd() { if (isDragging) { isDragging = false; applyTransform(); } }
+
+  lightboxImg.addEventListener('mousedown', e => { e.preventDefault(); dragStart(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e => dragMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', dragEnd);
+  lightboxImg.addEventListener('touchstart', e => { const t = e.touches[0]; dragStart(t.clientX, t.clientY); }, { passive: true });
+  lightboxImg.addEventListener('touchmove', e => { const t = e.touches[0]; dragMove(t.clientX, t.clientY); }, { passive: true });
+  lightboxImg.addEventListener('touchend', dragEnd);
+
+  lightboxImg.addEventListener('click', () => {
+    if (dragMoved) { dragMoved = false; return; }
+    if (scale > 1) { resetZoom(); } else { scale = 2.4; applyTransform(); }
+  });
+  lightboxPrev.addEventListener('click', () => { if (!lightboxSingleUrl && lightboxIdx > 0) { lightboxIdx--; renderLightbox(); } });
+  lightboxNext.addEventListener('click', () => { if (!lightboxSingleUrl && lightboxIdx < galleryFiles.length - 1) { lightboxIdx++; renderLightbox(); } });
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lightboxPrev.click();
+    if (e.key === 'ArrowRight') lightboxNext.click();
+  });
+  resultImg.addEventListener('click', () => { if (resultUrl) openLightboxUrl(resultUrl); });
+</script>
+</body>
+</html>

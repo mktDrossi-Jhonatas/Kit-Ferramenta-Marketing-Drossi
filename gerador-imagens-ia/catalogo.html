@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <script src="theme.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gerador de Imagens IA — Catálogo</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f0eb; --surface: #fff; --accent: #8b6f47; --accent2: #c4a882;
+      --text: #2c2417; --muted: #9b8e82; --border: #e8ddd4; --shadow: rgba(139,111,71,0.12);
+      --success: #4a7c59; --success-bg: #eef6f1; --danger: #c0392b; --danger-bg: #fdf2f0;
+      --hover-tint: #f5ede2; --hover-tint2: #fdf5eb; --btn-hover: #7a5e38;
+    }
+    :root[data-theme="dark"] {
+      --bg: #1c1712; --surface: #262019; --accent: #d9b26e; --accent2: #a9855a;
+      --text: #f0e9df; --muted: #a89a89; --border: #3a3226; --shadow: rgba(0,0,0,0.35);
+      --success: #7fc496; --success-bg: #1e2f24; --danger: #e07a6a; --danger-bg: #3a201f;
+      --hover-tint: #33291c; --hover-tint2: #33291c; --btn-hover: #e6c384;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; padding: 40px 20px; transition: background-color .25s ease, color .25s ease; }
+    .max-w { max-width: 900px; margin: 0 auto; }
+
+    .theme-toggle { position: fixed; top: 16px; right: 16px; z-index: 200; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+    .theme-toggle:hover { border-color: var(--accent2); color: var(--accent); transform: translateY(-1px) rotate(15deg); }
+    .theme-toggle svg { display: block; }
+    .theme-toggle .i-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .i-moon { display: block; }
+
+    .back-link { position: fixed; top: 16px; left: 16px; z-index: 200; display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 500; color: var(--muted); text-decoration: none; padding: 7px 13px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); box-shadow: 0 2px 10px var(--shadow); transition: all .15s; }
+    .back-link:hover { color: var(--accent); border-color: var(--accent2); background: var(--hover-tint); }
+
+    h1 { font-family: 'Playfair Display', serif; font-size: 1.9rem; text-align: center; margin-bottom: 6px; }
+    .subtitle { text-align: center; color: var(--muted); font-size: 0.88rem; margin-bottom: 8px; }
+    .badge-row { display: flex; justify-content: center; margin-bottom: 34px; }
+    .badge-local { display: inline-flex; align-items: center; gap: 7px; background: var(--hover-tint2); border: 1px solid var(--accent2); color: var(--accent); padding: 5px 13px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+
+    .gen-card { background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: 0 4px 24px var(--shadow); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; transition: all .2s; border: 1px solid transparent; }
+    .gen-card:hover { transform: translateY(-3px); border-color: var(--accent2); box-shadow: 0 8px 28px var(--shadow); }
+    .gen-icon { font-size: 1.8rem; }
+    .gen-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; }
+    .gen-desc { color: var(--muted); font-size: 0.82rem; line-height: 1.45; flex: 1; }
+    .gen-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: var(--accent); margin-top: 4px; }
+
+    .gen-card.soon { opacity: 0.55; cursor: default; pointer-events: none; border-style: dashed; border-color: var(--border); }
+    .soon-tag { display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 600; color: var(--muted); background: var(--hover-tint2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; width: fit-content; }
+
+    .foot-note { text-align: center; font-size: 0.74rem; color: var(--muted); margin-top: 32px; }
+  </style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+  <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+<script>document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });</script>
+<a class="back-link" href="https://mktdrossi-jhonatas.github.io/Kit-Ferramenta-Marketing-Drossi/index.html">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Voltar ao hub
+</a>
+
+<div class="max-w">
+  <h1>Gerador de Imagens IA</h1>
+  <p class="subtitle">Escolha o tipo de geração — novas opções vão sendo adicionadas com o tempo</p>
+  <div class="badge-row">
+    <span class="badge-local"><span class="badge-dot"></span> Rede local · <a href="logs.html" style="color:inherit;text-decoration:underline">ver logs e créditos</a></span>
+  </div>
+
+  <div class="grid">
+    <a class="gen-card" href="index.html">
+      <div class="gen-icon">🏠</div>
+      <div class="gen-name">Criação de ambiente</div>
+      <div class="gen-desc">Envie uma foto do produto e gere um ambiente/cenário ao redor dele com IA.</div>
+      <div class="gen-cta">Abrir ferramenta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+
+    <a class="gen-card" href="cor-textura.html">
+      <div class="gen-icon">🎨</div>
+      <div class="gen-name">Troca de cor e textura</div>
+      <div class="gen-desc">Envie a foto do produto e uma referência de cor/textura para aplicar nele com IA.</div>
+      <div class="gen-cta">Abrir ferramenta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+
+    <div class="gen-card soon">
+      <div class="gen-icon">🧩</div>
+      <span class="soon-tag">Em breve</span>
+      <div class="gen-name">Nova geração</div>
+      <div class="gen-desc">Mais tipos de geração serão adicionados aqui conforme forem ficando prontos.</div>
+    </div>
+  </div>
+
+  <p class="foot-note">Cada geração consome créditos da conta Magnific. O uso por IP é registrado e pode ser limitado na aba de logs.</p>
+</div>
+</body>
+</html>

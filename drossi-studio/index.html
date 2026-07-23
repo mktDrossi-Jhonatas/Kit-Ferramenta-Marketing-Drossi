@@ -129,7 +129,8 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
 .h-d{font-weight:400;font-size:1.9em;opacity:.74;margin-top:.15em}
 .h-title{position:absolute;left:6%;bottom:7.5%;font-family:'Instrument Sans';font-weight:600;line-height:1.02;letter-spacing:-.02em;z-index:3}
 /* EDITORIAL */
-.e-panel{position:absolute;top:0;bottom:0;left:0;width:45%;padding:0 6%;display:flex;flex-direction:column;justify-content:center;z-index:3}
+.e-panel{position:absolute;top:0;bottom:0;left:0;width:45%;padding:6% 6%;display:flex;flex-direction:column;justify-content:center;z-index:3;overflow:hidden}
+.e-panel-inner{transform-origin:left center}
 .e-eye{font-family:'Instrument Sans';font-weight:600;font-size:2.1em;letter-spacing:.22em;text-transform:uppercase}
 .e-name{font-family:'Playfair Display';font-weight:500;line-height:.94;margin:.16em 0 .2em}
 .e-rule{width:5.4em;height:2px;margin-bottom:1.1em;opacity:.9}
@@ -256,6 +257,7 @@ textarea.inp{resize:vertical;min-height:44px;line-height:1.35}
 </div>
 <input type="file" id="fileMain" accept="image/*" hidden>
 <input type="file" id="filePalette" accept="image/*" hidden>
+<input type="file" id="fileVariation" accept="image/*" hidden>
 <script>
 const THEMES={
  bordo:{label:'Bordô',c1:'#9e0708',c2:'#f3ece2',accent:'#d8b877',band:'#f3ece2',bandInk:'#6e0405',bandAccent:'#9e0708',gtD:'rgba(70,6,7,.46)',gtL:'rgba(243,236,226,.72)',darkBand:'#6e0405'},
@@ -267,6 +269,7 @@ const THEMES={
 const S={
  view:'compose',template:'editorial',ratio:'1:1',theme:'bordo',
  bg:null,bgZoom:114,bgX:50,bgY:50,grain:10,scrim:58,scrimColor:'dark',align:'left',bandTone:'light',
+ variationsEnabled:false,variations:[],
  blur:20,textScale:100,headScale:100,accentC:null,inkC:null,bandBgC:null,bandInkC:null,
  ctaStyle:'solid',orgIntensity:60,shadowInt:100,boldCaptions:false,
  fx:{minimal:'scrim',spec:'scrim',hairline:'line',editorial:'glass',organic:'both',palette:'glass'},
@@ -305,6 +308,7 @@ function controls(){
     gI.append(el('div','hint','Arraste no preview para mover · Scroll para zoom. Os controles Horizontal/Vertical só têm efeito visível com Zoom acima de 100%.'));
   }
   c.append(gI);
+  c.append(variationsUI());
   const gT=group('Modelo');gT.append(seg(TPL,T,v=>{S.template=v;controls();render();}));c.append(gT);
   const gTh=group('Estética');
   const sws=el('div','swatches');
@@ -364,7 +368,18 @@ function controls(){
   const gB=group('Marca');gB.append(seg([['on','Mostrar'],['off','Ocultar']],S.brandOn?'on':'off',v=>{S.brandOn=v==='on';render();controls();}));
   if(S.brandOn){const p=el('div');p.style.marginTop='9px';p.append(seg([['tl','↖'],['tr','↗'],['bl','↙'],['br','↘']],S.brandPos,v=>{S.brandPos=v;render();}));gB.append(p);gB.append(pick('Cor da marca',S.brandColor,v=>{S.brandColor=v;render();}));}
   c.append(gB);
+  updateExportLabel();
   bindUI();
+}
+function activeVariants(){
+  const extra=S.variations.filter(v=>v.img);
+  if(!S.variationsEnabled||extra.length===0)return null;
+  return[{name:'Principal',img:S.bg},...extra.map(v=>({name:v.name||'Variação',img:v.img}))];
+}
+function updateExportLabel(){
+  const btn=$('#export');if(!btn)return;
+  const av=activeVariants();
+  btn.textContent=av?`↓ Exportar ${av.length} variações`:'↓ Exportar PNG';
 }
 function group(l){const g=el('div','group');g.append(el('div','glabel',l));return g;}
 function fld(label,node){const f=el('div','field');f.append(el('label',null,label));f.append(node);return f;}
@@ -379,6 +394,31 @@ function feats(hair){const g=el('div','group');g.append(el('div','glabel',`Carac
     it.append(hd,t,de);
     if(hair){const p=el('div');p.style.marginTop='7px';p.append(seg([['right','Linha →'],['left','← Linha']],ft.side||'right',v=>{ft.side=v;render();}));it.append(p);}
     g.append(it);});return g;}
+function variationsUI(){
+  const g=el('div','group');
+  g.append(el('div','glabel',S.variationsEnabled?`Variações <span class="add" id="addVar">+ adicionar</span>`:'Variações'));
+  g.append(seg([['off','Desativado'],['on','Ativado']],S.variationsEnabled?'on':'off',v=>{
+    S.variationsEnabled=v==='on';
+    if(S.variationsEnabled&&S.variations.length===0)S.variations.push({id:Date.now(),name:'Variação 1',img:null});
+    controls();
+  }));
+  if(S.variationsEnabled){
+    g.append(el('div','hint','Envie fotos do mesmo produto em outras cores/versões. Ao exportar, a mesma arte (texto, layout, tudo) é gerada automaticamente para cada foto, junto com a principal.'));
+    S.variations.forEach((v,i)=>{
+      const it=el('div','feat-item');
+      const hd=el('div','feat-head',`Variação ${i+1}<button class="del" data-delvar="${i}">×</button>`);
+      const lab=el('input','inp');lab.value=v.name;lab.placeholder='Nome (ex: Cinza)';lab.style.marginBottom='6px';
+      lab.oninput=()=>{v.name=lab.value;updateExportLabel();};
+      const drop=el('div','drop'+(v.img?' has':''));
+      drop.dataset.varIdx=i;
+      drop.innerHTML=v.img?`<img src="${v.img}"><div class="rm" data-rmvar="${i}">remover</div>`:'📷 Enviar foto desta variação';
+      it.append(hd,lab,drop);
+      g.append(it);
+    });
+    if(S.variations.length===0)g.append(el('div','hint','Nenhuma variação adicionada ainda.'));
+  }
+  return g;
+}
 function paletteColorsUI(){
   const g=el('div','group');
   g.append(el('div','glabel',`Cores <span class="add" id="addPal">+ adicionar cor</span>`));
@@ -424,10 +464,22 @@ function bindUI(){
     dp.ondrop=e=>{e.preventDefault();dp.style.borderColor='';const f=e.dataTransfer.files[0];if(f)readImg(f,x=>{S.paletteColors[i].img=x;controls();render();});};
   });
   document.querySelectorAll('[data-rmpal]').forEach(b=>b.onclick=e=>{e.stopPropagation();const i=+b.dataset.rmpal;S.paletteColors[i].img=null;controls();render();});
+  const addVar=$('#addVar');if(addVar)addVar.onclick=()=>{S.variations.push({id:Date.now()+Math.random(),name:'Variação '+(S.variations.length+1),img:null});controls();};
+  document.querySelectorAll('[data-delvar]').forEach(b=>b.onclick=e=>{e.stopPropagation();S.variations.splice(+b.dataset.delvar,1);controls();});
+  document.querySelectorAll('[data-var-idx]').forEach(dp=>{
+    const i=+dp.dataset.varIdx;
+    dp.onclick=e=>{if(e.target.dataset.rmvar!==undefined)return;varFileTarget=i;$('#fileVariation').click();};
+    dp.ondragover=e=>{e.preventDefault();dp.style.borderColor='var(--brass)';};
+    dp.ondragleave=()=>dp.style.borderColor='';
+    dp.ondrop=e=>{e.preventDefault();dp.style.borderColor='';const f=e.dataTransfer.files[0];if(f)readImg(f,x=>{S.variations[i].img=x;controls();});};
+  });
+  document.querySelectorAll('[data-rmvar]').forEach(b=>b.onclick=e=>{e.stopPropagation();const i=+b.dataset.rmvar;S.variations[i].img=null;controls();});
 }
 $('#fileMain').onchange=e=>{const f=e.target.files[0];if(f)readImg(f,d=>{S.bg=d;controls();render();});e.target.value='';};
 let palFileTarget=null;
 $('#filePalette').onchange=e=>{const f=e.target.files[0];if(f&&palFileTarget!=null){const idx=palFileTarget;readImg(f,d=>{S.paletteColors[idx].img=d;controls();render();});}e.target.value='';palFileTarget=null;};
+let varFileTarget=null;
+$('#fileVariation').onchange=e=>{const f=e.target.files[0];if(f&&varFileTarget!=null){const idx=varFileTarget;readImg(f,d=>{S.variations[idx].img=d;controls();});}e.target.value='';varFileTarget=null;};
 
 /* ========== DRAG-TO-PAN + SCROLL-TO-ZOOM ========== */
 let _pan=false,_px=0,_py=0,_bx=0,_by=0;
@@ -528,12 +580,12 @@ function render(){
     }
     let fe=S.features.map(f=>`<div class="e-feat"><div class="e-tick" style="background:${A}"></div><div><div class="e-ft">${esc(f.title)}</div><div class="e-fd">${esc(f.desc)}</div></div></div>`).join('');
     const panelInk=ink;
-    h+=`<div class="e-panel" style="color:${panelInk}">
+    h+=`<div class="e-panel" style="color:${panelInk}"><div class="e-panel-inner" id="ePanelInner">
       ${S.overline?`<div class="e-eye" style="color:${A}">${esc(S.overline)}</div>`:''}
       <div class="e-name" style="font-size:${hs(HEAD.editorial)}">${esc(S.name)}</div>
       <div class="e-rule" style="background:${A}"></div>
       ${S.tagline?`<div class="e-tag">${nl(S.tagline)}</div>`:''}${fe}
-      ${ctaHtml(S.cta,A,panelInk)}</div>`;
+      ${ctaHtml(S.cta,A,panelInk)}</div></div>`;
   } else if(T==='split'){
     const light=S.bandTone==='light';const bbg=S.bandBgC||(light?t.band:t.darkBand);const bink=S.bandInkC||(light?t.bandInk:'#f4efe6');
     h+=`<div class="b-band" style="height:27%;background:${bbg};color:${bink}">
@@ -595,6 +647,17 @@ function render(){
   ov.innerHTML=h;
   if(T==='hairline')bindHairDrag();
   if(T==='palette')bindPaletteDrag();
+  if(T==='editorial')fitEditorialPanel();
+}
+/* Auto-shrinks the editorial text block to fit its panel instead of overflowing when copy/features grow */
+function fitEditorialPanel(){
+  const panel=$('.e-panel'),inner=$('#ePanelInner');
+  if(!panel||!inner)return;
+  inner.style.transform='';
+  const cs=getComputedStyle(panel);
+  const avail=panel.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+  const need=inner.scrollHeight;
+  if(need>avail&&need>0)inner.style.transform=`scale(${Math.max(.55,avail/need)})`;
 }
 function ctaHtml(text,accentColor,inkColor){
   if(!text)return'';
@@ -647,24 +710,40 @@ async function preloadFonts(){
 preloadFonts();
 
 /* ========== EXPORT — scale(1) then capture with embedded fonts ========== */
+function sanitizeVarName(s){
+  const noAccents=(s||'variacao').normalize('NFD').replace(/\p{M}/gu,'');
+  return noAccents.replace(/[^a-zA-Z0-9-]+/g,'_').replace(/^_+|_+$/g,'')||'variacao';
+}
 $('#export').onclick=async()=>{
   if(!S.bg){alert('Envie a foto do produto primeiro.');return;}
   const btn=$('#export');
   if(btn.disabled)return;
-  const lab=btn.textContent;btn.textContent='Gerando…';btn.disabled=true;btn.style.opacity=.6;btn.style.pointerEvents='none';
+  const lab=btn.textContent;btn.disabled=true;btn.style.opacity=.6;btn.style.pointerEvents='none';
   /* ensure fonts are preloaded */
   if(!_fontReady)await preloadFonts();
   const stg=$('#stage'),sc=$('#scaler'),tf=sc.style.transform;
   sc.style.transform='scale(1)';
+  const variants=activeVariants()||[{name:null,img:S.bg}];
+  const originalBg=S.bg;
   try{
     await document.fonts.ready;
-    await new Promise(r=>setTimeout(r,150));
-    const opts={pixelRatio:2,cacheBust:true,skipAutoScale:true};
-    if(_fontCSS) opts.fontEmbedCSS=_fontCSS;
-    const url=await htmlToImage.toPng(stg,opts);
-    const a=document.createElement('a');a.download=`drossi_${S.template}_${S.ratio.replace(':','x')}.png`;a.href=url;a.click();
+    for(let i=0;i<variants.length;i++){
+      const variant=variants[i];
+      btn.textContent=variants.length>1?`Gerando ${i+1}/${variants.length}…`:'Gerando…';
+      if(variant.img!==S.bg){S.bg=variant.img;bgApply();render();}
+      await new Promise(r=>setTimeout(r,150));
+      const opts={pixelRatio:2,cacheBust:true,skipAutoScale:true};
+      if(_fontCSS) opts.fontEmbedCSS=_fontCSS;
+      const url=await htmlToImage.toPng(stg,opts);
+      const a=document.createElement('a');
+      const suffix=variant.name?`_${sanitizeVarName(variant.name)}`:'';
+      a.download=`drossi_${S.template}${suffix}_${S.ratio.replace(':','x')}.png`;a.href=url;a.click();
+      if(i<variants.length-1)await new Promise(r=>setTimeout(r,300));
+    }
   }catch(err){alert('Falha ao exportar. Verifique a conexão.');console.error(err);}
-  sc.style.transform=tf;btn.textContent=lab;btn.disabled=false;btn.style.opacity='';btn.style.pointerEvents='';
+  if(S.bg!==originalBg){S.bg=originalBg;bgApply();render();}
+  sc.style.transform=tf;btn.disabled=false;btn.style.opacity='';btn.style.pointerEvents='';
+  updateExportLabel();
 };
 $('#ratio').onchange=e=>{S.ratio=e.target.value;fit();render();};
 function setPanel(open){$('#controls').classList.toggle('open',open);$('#panelScrim').classList.toggle('open',open);}

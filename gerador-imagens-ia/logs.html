@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <script src="theme.js"></script>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Gerador de Imagens IA — Logs e créditos</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>📜</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f0eb; --surface:#fff; --accent:#8b6f47; --accent2:#c4a882;
+      --text:#2c2417; --muted:#9b8e82; --border:#e8ddd4; --shadow:rgba(139,111,71,.12);
+      --success:#4a7c59; --success-bg:#eef6f1; --danger:#c0392b; --danger-bg:#fdf2f0;
+      --amber:#b8792a; --amber-bg:#fbeed0; --blue:#4a6b8b; --blue-bg:#eaf1f7;
+      --hover-tint:#fdf5eb; --row-bg:#fdfaf7;
+    }
+    :root[data-theme="dark"]{
+      --bg:#1c1712; --surface:#262019; --accent:#d9b26e; --accent2:#a9855a;
+      --text:#f0e9df; --muted:#a89a89; --border:#3a3226; --shadow:rgba(0,0,0,.35);
+      --success:#7fc496; --success-bg:#1e2f24; --danger:#e07a6a; --danger-bg:#3a201f;
+      --amber:#d9a656; --amber-bg:#3a2e17; --blue:#7fa3c4; --blue-bg:#1e2a35;
+      --hover-tint:#33291c; --row-bg:#201a14;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background-color .25s ease,color .25s ease}
+    button,input,select,textarea{font-family:inherit}
+    .theme-toggle{position:fixed;top:16px;right:16px;z-index:200;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;box-shadow:0 2px 10px var(--shadow);transition:all .15s}
+    .theme-toggle:hover{border-color:var(--accent2);color:var(--accent);transform:translateY(-1px) rotate(15deg)}
+    .theme-toggle svg{display:block}
+    .theme-toggle .i-moon{display:none}
+    :root[data-theme="dark"] .theme-toggle .i-sun{display:none}
+    :root[data-theme="dark"] .theme-toggle .i-moon{display:block}
+    :root[data-theme="dark"] header{background:rgba(28,23,18,.9)}
+    header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+    .header-inner{max-width:1152px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 22px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo-icon{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--accent),#a9855a);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(139,111,71,.3);flex-shrink:0}
+    .logo h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;line-height:1.1}
+    .logo p{font-size:12px;color:var(--muted);margin-top:2px}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 13px;border:1px solid var(--border);border-radius:20px;background:var(--surface);transition:all .15s}
+    .back-link:hover{color:var(--accent);border-color:var(--accent2);background:var(--hover-tint)}
+
+    main{max-width:1152px;margin:0 auto;padding:26px 20px 60px}
+
+    h2{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+    .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:18px}
+    .toolbar .stat{font-size:13px;color:var(--muted)}
+    .toolbar .stat strong{color:var(--text)}
+    .toolbar .spacer{flex:1}
+    select,button.refresh{font-family:inherit;font-size:12.5px;padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+    button.refresh{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--accent);border-color:var(--accent2)}
+    button.refresh svg{transition:transform .4s ease}
+    button.refresh:hover{background:var(--hover-tint);transform:translateY(-2px);box-shadow:0 6px 14px rgba(139,111,71,.16)}
+    button.refresh:hover svg{transform:rotate(180deg)}
+    button.refresh:active{transform:scale(.96)}
+    label.auto{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+
+    .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px var(--shadow);margin-bottom:32px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--row-bg);white-space:nowrap}
+    tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover{background:var(--row-bg)}
+    .ip{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--text)}
+    .ts{color:var(--muted);font-size:12px;white-space:nowrap}
+    .ev-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+    .ev-generate_start{background:var(--amber-bg);color:var(--amber)}
+    .ev-generate_done{background:var(--success-bg);color:var(--success)}
+    .ev-generate_blocked{background:var(--danger-bg);color:var(--danger)}
+    .ev-generate_error{background:var(--danger-bg);color:var(--danger)}
+    .ev-visit{background:var(--hover-tint);color:var(--accent)}
+    .ev-limit_updated{background:var(--blue-bg);color:var(--blue)}
+    .ev-credits_reset{background:var(--blue-bg);color:var(--blue)}
+    .detail{font-size:12px;color:var(--muted);line-height:1.5}
+    .detail .err{color:var(--danger)}
+
+    .empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:13.5px}
+    .empty-state .big{font-size:1.8rem;margin-bottom:8px}
+
+    /* credits panel */
+    .limit-cell{display:flex;align-items:center;gap:6px}
+    .limit-input{width:90px;padding:6px 9px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:12.5px}
+    .limit-input:focus{outline:none;border-color:var(--accent2)}
+    .bar-wrap{width:100px;height:6px;border-radius:3px;background:var(--border);overflow:hidden}
+    .bar-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .2s}
+    .bar-fill.over{background:var(--danger)}
+    .usage-cell{display:flex;flex-direction:column;gap:4px}
+    .usage-num{font-size:12px;color:var(--muted)}
+    .usage-num strong{color:var(--text)}
+    .row-actions{display:flex;gap:6px}
+    .mini-btn{padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .15s}
+    .mini-btn:hover{border-color:var(--accent2);color:var(--accent);background:var(--hover-tint)}
+    .mini-btn.save{border-color:var(--accent2);color:var(--accent)}
+    .mini-btn.reset:hover{border-color:#e0a0a0;color:var(--danger);background:var(--danger-bg)}
+    .unlimited-tag{font-size:11px;color:var(--muted);font-style:italic}
+
+    /* image library */
+    .lib-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 2px 12px var(--shadow);padding:16px 18px;margin-bottom:32px}
+    .lib-group{padding:8px 0;border-bottom:1px solid var(--border)}
+    .lib-group:last-child{border-bottom:none;padding-bottom:0}
+    .lib-group:first-child{padding-top:0}
+    .lib-group-head{display:flex;align-items:baseline;gap:7px;margin-bottom:8px;font-size:12.5px}
+    .lib-group-head .ip{font-family:ui-monospace,Menlo,monospace;font-weight:600;color:var(--text)}
+    .lib-group-head .count{color:var(--muted)}
+    .lib-thumbs{display:flex;flex-wrap:wrap;gap:7px}
+    .lib-thumb{position:relative;width:58px;height:58px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:var(--row-bg);flex-shrink:0}
+    .lib-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .lib-thumb a.dl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);opacity:0;transition:all .15s;color:#fff;font-size:17px;text-decoration:none}
+    .lib-thumb:hover a.dl{opacity:1;background:rgba(20,15,8,.5)}
+
+    footer{max-width:1152px;margin:36px auto 0;padding:18px 20px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border);text-align:center}
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" title="Alternar modo escuro/claro" aria-label="Alternar tema">
+    <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <a class="back-link" href="index.html">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M11 7H3M7 3L3 7l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Voltar ao gerador
+        </a>
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <h1>Logs e créditos</h1>
+          <p>Quem usou, quantos créditos gastou e limites por IP</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <h2>💳 Créditos por IP</h2>
+    <div class="toolbar">
+      <span class="stat"><strong id="creditsCount">0</strong> IP(s) · <span id="costPerRun">—</span> créditos por geração</span>
+      <div class="spacer"></div>
+      <button class="refresh" id="refreshCreditsBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table id="creditsTable">
+        <thead>
+          <tr>
+            <th>IP</th>
+            <th>Gerações</th>
+            <th>Uso de créditos</th>
+            <th>Limite</th>
+            <th>Última vez</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="creditsBody"></tbody>
+      </table>
+      <div id="creditsEmpty" class="empty-state" style="display:none">
+        <div class="big">💳</div>
+        Nenhum IP usou o gerador ainda.
+      </div>
+    </div>
+
+    <h2>🖼️ Biblioteca de imagens</h2>
+    <div class="toolbar">
+      <span class="stat"><strong id="libCount">0</strong> imagem(ns)</span>
+      <div class="spacer"></div>
+      <button class="refresh" id="refreshLibBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar
+      </button>
+    </div>
+    <div class="lib-wrap" id="libWrap"></div>
+
+    <h2>📜 Atividade</h2>
+    <div class="toolbar">
+      <span class="stat"><strong id="countStat">0</strong> evento(s)</span>
+      <select id="filterEvent">
+        <option value="">Todos os eventos</option>
+        <option value="visit">Visitas</option>
+        <option value="generate_start">Gerações iniciadas</option>
+        <option value="generate_done">Gerações concluídas</option>
+        <option value="generate_blocked">Bloqueadas (limite)</option>
+        <option value="generate_error">Erros</option>
+        <option value="limit_updated">Limite alterado</option>
+        <option value="credits_reset">Créditos resetados</option>
+      </select>
+      <div class="spacer"></div>
+      <label class="auto"><input id="autoRefresh" type="checkbox" checked> Atualizar automaticamente</label>
+      <button class="refresh" id="refreshBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Atualizar
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>Quando</th>
+            <th>Evento</th>
+            <th>IP</th>
+            <th>Detalhes</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+      <div id="emptyState" class="empty-state" style="display:none">
+        <div class="big">📭</div>
+        Nenhum evento registrado ainda.
+      </div>
+    </div>
+  </main>
+
+  <footer>Gerador de Imagens IA · dados locais em <code>data/credits.json</code> e <code>logs/activity.log</code> · visível apenas para quem acessa este servidor na rede</footer>
+
+  <script>
+    document.getElementById('themeToggle').addEventListener('click', function(){ DrossiTheme.toggle(); });
+
+    /* ── Activity log ── */
+    const logBody = document.getElementById('logBody');
+    const emptyState = document.getElementById('emptyState');
+    const countStat = document.getElementById('countStat');
+    const filterEvent = document.getElementById('filterEvent');
+    const autoRefresh = document.getElementById('autoRefresh');
+    const refreshBtn = document.getElementById('refreshBtn');
+    let timer = null;
+    let allEntries = [];
+
+    const EVENT_LABEL = {
+      visit: 'Visita',
+      generate_start: 'Gerou',
+      generate_done: 'Concluiu',
+      generate_blocked: 'Bloqueado (limite)',
+      generate_error: 'Erro',
+      limit_updated: 'Limite alterado',
+      credits_reset: 'Créditos resetados',
+    };
+
+    function fmtTs(iso){
+      try{
+        const d = new Date(iso);
+        return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR');
+      }catch(_){ return iso; }
+    }
+
+    function detailFor(e){
+      if(e.event==='generate_start') return `run <code>${e.runId||'?'}</code> · uso: <strong>${e.usedCredits}</strong>${e.limit!=null?` / ${e.limit}`:' (sem limite)'}`;
+      if(e.event==='generate_done') return `${e.width}×${e.height}px · ${Math.round((e.size||0)/1024)} KB salvos na biblioteca`;
+      if(e.event==='generate_blocked') return `<span class="err">limite atingido: ${e.usedCredits} / ${e.limit}</span>`;
+      if(e.event==='generate_error') return `<span class="err">${(e.error && (e.error.message||e.error)||'erro desconhecido').toString().slice(0,160)}</span>`;
+      if(e.event==='limit_updated') return `novo limite: ${e.limit==null?'sem limite':e.limit}`;
+      if(e.event==='credits_reset') return 'contador zerado';
+      if(e.event==='visit') return `abriu ${e.file||'a página'}`;
+      return '';
+    }
+
+    async function loadLogs(){
+      try{
+        const res = await fetch('/logs?limit=500');
+        const data = await res.json();
+        allEntries = (data && data.entries) || [];
+        renderLogs();
+      }catch(e){
+        emptyState.style.display = '';
+        emptyState.querySelector('.big').textContent = '⚠️';
+        emptyState.lastChild.textContent = 'Não foi possível carregar os logs.';
+      }
+    }
+
+    function renderLogs(){
+      const filter = filterEvent.value;
+      const entries = filter ? allEntries.filter(e=>e.event===filter) : allEntries;
+      countStat.textContent = entries.length;
+      logBody.innerHTML = '';
+      emptyState.style.display = entries.length===0 ? '' : 'none';
+      document.getElementById('logTable').style.display = entries.length===0 ? 'none' : 'table';
+
+      entries.forEach(e=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="ts">${fmtTs(e.ts)}</td>
+          <td><span class="ev-pill ev-${e.event}">${EVENT_LABEL[e.event]||e.event}</span></td>
+          <td class="ip">${e.ip||'—'}</td>
+          <td class="detail">${detailFor(e)}</td>
+        `;
+        logBody.appendChild(tr);
+      });
+    }
+
+    filterEvent.addEventListener('change', renderLogs);
+    refreshBtn.addEventListener('click', loadLogs);
+
+    function scheduleAuto(){
+      clearInterval(timer);
+      if(autoRefresh.checked) timer = setInterval(()=>{ loadLogs(); loadCredits(); loadLibrary(); }, 8000);
+    }
+    autoRefresh.addEventListener('change', scheduleAuto);
+
+    /* ── Image library ── */
+    const libWrap = document.getElementById('libWrap');
+    const libCount = document.getElementById('libCount');
+    const refreshLibBtn = document.getElementById('refreshLibBtn');
+
+    async function loadLibrary(){
+      try{
+        const res = await fetch('/library');
+        const data = await res.json();
+        const groups = (data && data.groups) || [];
+        libCount.textContent = groups.reduce((s,g)=>s+g.count,0);
+        if(groups.length===0){
+          libWrap.innerHTML = '<div class="empty-state"><div class="big">🖼️</div>Nenhuma imagem gerada ainda.</div>';
+          return;
+        }
+        libWrap.innerHTML = groups.map(g => `
+          <div class="lib-group">
+            <div class="lib-group-head"><span class="ip">${g.ip}</span><span class="count">${g.count} imagem(ns)</span></div>
+            <div class="lib-thumbs">
+              ${g.files.map(f => `
+                <div class="lib-thumb">
+                  <img src="${f.url}" loading="lazy" alt="">
+                  <a class="dl" href="${f.url}" download title="Baixar">⬇</a>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      }catch(e){
+        libWrap.innerHTML = '<div class="empty-state"><div class="big">⚠️</div>Não foi possível carregar a biblioteca.</div>';
+      }
+    }
+    refreshLibBtn.addEventListener('click', loadLibrary);
+
+    /* ── Credits panel ── */
+    const creditsBody = document.getElementById('creditsBody');
+    const creditsEmpty = document.getElementById('creditsEmpty');
+    const creditsCount = document.getElementById('creditsCount');
+    const costPerRunEl = document.getElementById('costPerRun');
+    const refreshCreditsBtn = document.getElementById('refreshCreditsBtn');
+
+    async function loadCredits(){
+      try{
+        const res = await fetch('/credits');
+        const data = await res.json();
+        const entries = (data && data.entries) || [];
+        costPerRunEl.textContent = data.costPerRun ?? '—';
+        creditsCount.textContent = entries.length;
+        creditsBody.innerHTML = '';
+        creditsEmpty.style.display = entries.length===0 ? '' : 'none';
+        document.getElementById('creditsTable').style.display = entries.length===0 ? 'none' : 'table';
+
+        entries.forEach(entry=>{
+          const tr = document.createElement('tr');
+          const pct = entry.limit ? Math.min(100, Math.round(entry.usedCredits / entry.limit * 100)) : 0;
+          const over = entry.limit!=null && entry.usedCredits >= entry.limit;
+          tr.innerHTML = `
+            <td class="ip">${entry.ip}</td>
+            <td>${entry.usedRuns||0}</td>
+            <td>
+              <div class="usage-cell">
+                <span class="usage-num"><strong>${entry.usedCredits||0}</strong>${entry.limit!=null?` / ${entry.limit}`:''}</span>
+                ${entry.limit!=null?`<div class="bar-wrap"><div class="bar-fill${over?' over':''}" style="width:${pct}%"></div></div>`:'<span class="unlimited-tag">sem limite</span>'}
+              </div>
+            </td>
+            <td>
+              <div class="limit-cell">
+                <input type="number" min="0" step="87" class="limit-input" placeholder="sem limite" value="${entry.limit ?? ''}" data-ip="${entry.ip}">
+              </div>
+            </td>
+            <td class="ts">${entry.lastSeen ? new Date(entry.lastSeen).toLocaleString('pt-BR') : '—'}</td>
+            <td>
+              <div class="row-actions">
+                <button class="mini-btn save" data-save="${entry.ip}">Salvar</button>
+                <button class="mini-btn reset" data-reset="${entry.ip}">Zerar</button>
+              </div>
+            </td>
+          `;
+          creditsBody.appendChild(tr);
+        });
+
+        creditsBody.querySelectorAll('[data-save]').forEach(btn=>{
+          btn.onclick = async ()=>{
+            const ip = btn.dataset.save;
+            const input = creditsBody.querySelector(`.limit-input[data-ip="${ip}"]`);
+            const val = input.value.trim();
+            const limit = val === '' ? null : Number(val);
+            btn.textContent = 'Salvando…'; btn.disabled = true;
+            try{
+              await fetch(`/credits/${encodeURIComponent(ip)}/limit`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ limit })
+              });
+              await loadCredits();
+            } finally { btn.textContent = 'Salvar'; btn.disabled = false; }
+          };
+        });
+        creditsBody.querySelectorAll('[data-reset]').forEach(btn=>{
+          btn.onclick = async ()=>{
+            const ip = btn.dataset.reset;
+            if(!confirm(`Zerar o contador de créditos de ${ip}?`)) return;
+            btn.textContent = 'Zerando…'; btn.disabled = true;
+            try{
+              await fetch(`/credits/${encodeURIComponent(ip)}/reset`, { method: 'POST' });
+              await loadCredits();
+            } finally { btn.textContent = 'Zerar'; btn.disabled = false; }
+          };
+        });
+      }catch(e){
+        creditsEmpty.style.display = '';
+        creditsEmpty.querySelector('.big').textContent = '⚠️';
+        creditsEmpty.lastChild.textContent = 'Não foi possível carregar os créditos.';
+      }
+    }
+    refreshCreditsBtn.addEventListener('click', loadCredits);
+
+    loadLogs();
+    loadCredits();
+    loadLibrary();
+    scheduleAuto();
+  </script>
+</body>
+</html>
